@@ -81,6 +81,30 @@ type TrafficAirDataRequest = {
   id?: string
   date?: string
 }
+
+type RankingRequest = {
+  option: string
+  date?: string
+}
+
+type RankingResponse = {
+  time?: string
+  date?: string
+  count: number
+  option: string
+  ranking?: RankingData[]
+  traffic_ranking?: RankingData[]
+  air_ranking?: RankingData[]
+}
+
+type RankingData = {
+  id: number
+  name: string
+  traffic_quality_index?: number
+  air_quality_index?: number
+  rank: number
+}
+
 type Ranking<T = number> = {
   location: string
   value: T
