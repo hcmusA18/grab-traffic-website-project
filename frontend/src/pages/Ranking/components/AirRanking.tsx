@@ -1,6 +1,7 @@
 import { fakerVI } from '@faker-js/faker'
 import { RankingBoard } from './RankingBoard'
 import { useEffect, useState } from 'react'
+import { colors } from 'theme'
 
 const rankingData = Array.from({ length: fakerVI.number.int({ min: 10, max: 20 }) }, () => ({
   location: fakerVI.location.city(),
@@ -14,12 +15,12 @@ const rankingOptions = {
     { title: 'PM2.5', key: 'value' as keyof Ranking }
   ],
   color: [
-    { range: [0, 50] as [number, number], color: '#7ABA78' },
-    { range: [51, 100] as [number, number], color: '#FEB941' },
-    { range: [101, 150] as [number, number], color: '#F97300' },
-    { range: [151, 200] as [number, number], color: '#C40C0C' },
-    { range: [201, 300] as [number, number], color: '#8644A2' },
-    { range: [301, 9999] as [number, number], color: '#32012F' }
+    { range: [0, 50] as [number, number], color: colors.green },
+    { range: [51, 100] as [number, number], color: colors.yellow },
+    { range: [101, 150] as [number, number], color: colors.orange },
+    { range: [151, 200] as [number, number], color: colors.red },
+    { range: [201, 300] as [number, number], color: colors.purple },
+    { range: [301, 9999] as [number, number], color: colors.dark }
   ]
 }
 

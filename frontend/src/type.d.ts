@@ -29,28 +29,28 @@ type LocationRequest = {
 type TrafficData = {
   day?: number
   hour?: number
-  car: number
-  bike: number
-  truck: number
-  bus: number
-  person: number
-  motorbike: number
+  car?: number
+  bike?: number
+  truck?: number
+  bus?: number
+  person?: number
+  motorbike?: number
   count?: number
   traffic_quality?: number
-  trafic_quality_index?: number
+  traffic_quality_index?: number
 }
 
 type AirData = {
   day?: number
   hour?: number
-  co: number
-  no: number
-  no2: number
-  o3: number
-  so2: number
-  pm2_5: number
-  pm10: number
-  nh3: number
+  co?: number
+  no?: number
+  no2?: number
+  o3?: number
+  so2?: number
+  pm2_5?: number
+  pm10?: number
+  nh3?: number
   count?: number
   air_quality?: number
   air_quality_index?: number
@@ -59,6 +59,12 @@ type AirData = {
 type TrafficAirData = {
   traffic_data?: TrafficData
   air_data?: AirData
+}
+
+type QualityIndex = {
+  hour?: number
+  traffic_quality_index?: number
+  air_quality_index?: number
 }
 
 type TrafficAirDataResponse = {
@@ -75,11 +81,14 @@ type TrafficAirDataResponse = {
   air_data_hour?: AirData[]
   traffic_data_day?: TrafficData[]
   air_data_day?: AirData[]
+  data_hour?: QualityIndex[]
 }
 
 type TrafficAirDataRequest = {
   id?: string
   date?: string
+  startDate?: string
+  endDate?: string
 }
 type Ranking<T = number> = {
   location: string
