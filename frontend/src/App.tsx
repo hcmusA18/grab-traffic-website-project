@@ -1,8 +1,10 @@
 import './App.css'
 import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
 import { MapPage, ChartPage, RankingPage, RootLayout, NotFound, TestPage } from './pages'
+import { useInitLocationData } from 'libs/redux'
 
 const App = () => {
+  useInitLocationData()
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<RootLayout />}>

@@ -12,7 +12,7 @@ import {
   ScaleControl
 } from 'react-map-gl'
 import { FeatureCollection, Point } from 'geojson'
-import { useAppDispatch, setShowDetails, useInitLocationData, useAppSelector } from 'libs/redux'
+import { useAppDispatch, setShowDetails, useAppSelector } from 'libs/redux'
 import { Details } from 'components/Details'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import './index.css'
@@ -28,8 +28,6 @@ export const MapPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [hasData, setHasData] = useState(false)
   const dispatch = useAppDispatch()
-
-  useInitLocationData()
 
   useEffect(() => {
     if (locations.length > 0 || locations) {
