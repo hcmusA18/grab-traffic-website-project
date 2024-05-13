@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { colors } from 'theme'
 import { RankingService } from 'services/RankingService'
 
-
 const rankingOptions = {
   title: 'Air Quality Ranking',
   columns: [

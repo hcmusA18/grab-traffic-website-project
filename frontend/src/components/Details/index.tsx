@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import {
   useAppDispatch,
   useAppSelector,
@@ -19,28 +18,6 @@ import { Traffic } from './Traffic'
 const CustomTabPane: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <div className="flex flex-col gap-4">{children}</div>
 }
-
-const tabsItems = [
-  {
-    key: 'airq',
-    label: 'Air Quality',
-    children: (
-      <CustomTabPane key="airq">
-        <AirQuality />
-        <Weather />
-      </CustomTabPane>
-    )
-  },
-  {
-    key: 'traffic',
-    label: 'Traffic',
-    children: (
-      <CustomTabPane key="traffic">
-        <Traffic />
-      </CustomTabPane>
-    )
-  }
-]
 
 const CustomTabBar: TabsProps['renderTabBar'] = (props, DefaultTabBar) => {
   const {
@@ -70,40 +47,61 @@ export const Details = () => {
 
   useEffect(() => {
     if (trafficData && airData) {
-      console.log('Traffic Data', trafficData)
-      console.log('Air Data', airData)
       setIsLoading(false)
-    } else if (!showDetails) {
+    } else {
       setIsLoading(true)
     }
-  }, [trafficData, airData, showDetails])
+  }, [trafficData, airData])
+
+
+  const tabsItems = [
+    {
+      key: 'airq',
+      label: 'Air Quality',
+      children: (
+        <CustomTabPane key="airq">
+          <Spin spinning={isLoading} size="large" tip="Loading...">
+            <AirQuality />
+            <Weather />
+          </Spin>
+        </CustomTabPane>
+      )
+    },
+    {
+      key: 'traffic',
+      label: 'Traffic',
+      children: (
+        <CustomTabPane key="traffic">
+          <Traffic />
+        </CustomTabPane>
+      )
+    }
+  ]
 
   return (
     <div className={`${className}${appendClass}`}>
-      <Spin spinning={isLoading} size="large" tip="Loading...">
-        <div className="flex flex-col">
-          <div className="flex justify-between">
-            {/* dummy div to center the text */}
-            <div></div>
-            <div className="flex flex-col items-center justify-center">
-              <h2 className="text-lg font-bold">{district}</h2>
-              <p className="text-xs leading-3">11:09PM, Th04 06 2024</p>
-            </div>
-            <button
-              onClick={() => {
-                dispatch(setShowDetails({ showDetails: false, district: null }))
-                dispatch(setCurrentAirData(undefined))
-                dispatch(setCurrentTrafficData(undefined))
-                dispatch(setCurrentLocationID(-1))
-              }}
-              className="text-xl font-bold">
-              <FaChevronRight />
-            </button>
+      <div className="flex flex-col">
+        <div className="flex justify-between">
+          {/* dummy div to center the text */}
+          <div></div>
+          <div className="flex flex-col items-center justify-center">
+            <h2 className="text-lg font-bold">{district}</h2>
+            <p className="text-xs leading-3">11:09PM, Th04 06 2024</p>
           </div>
-
-          {!isLoading && <Tabs defaultActiveKey="airq" centered items={tabsItems} renderTabBar={CustomTabBar} />}
+          <button
+            onClick={() => {
+              dispatch(setShowDetails({ showDetails: false, district: null }))
+              dispatch(setCurrentAirData(undefined))
+              dispatch(setCurrentTrafficData(undefined))
+              dispatch(setCurrentLocationID(-1))
+            }}
+            className="text-xl font-bold">
+            <FaChevronRight />
+          </button>
         </div>
-      </Spin>
+
+        {!isLoading && <Tabs defaultActiveKey="airq" centered items={tabsItems} renderTabBar={CustomTabBar} />}
+      </div>
     </div>
   )
 }

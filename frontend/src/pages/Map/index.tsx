@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { useState, useRef, useEffect, useMemo } from 'react'
 import {
   Map,
@@ -19,7 +18,7 @@ import './index.css'
 import reactIcon from 'assets/react.svg'
 import { Spin } from 'antd'
 import { distance, point } from '@turf/turf'
-import { setCurrentLocationID } from 'libs/redux/sliceData'
+import { setCurrentAirData, setCurrentLocationID, setCurrentTrafficData } from 'libs/redux/sliceData'
 
 export const MapPage = () => {
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
@@ -117,8 +116,9 @@ export const MapPage = () => {
       if (districtData) {
         zoomToDistrict(event, districtData)
         dispatch(setShowDetails({ showDetails: true, district: districtData.place }))
-        console.log('District ID: ', districtData.id)
         dispatch(setCurrentLocationID(districtData.id ?? ''))
+        dispatch(setCurrentAirData(undefined))
+        dispatch(setCurrentTrafficData(undefined))
       }
     }
   }
