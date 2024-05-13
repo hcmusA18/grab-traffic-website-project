@@ -5,6 +5,8 @@ type MapLocation = {
   long?: string
   request?: string
   distance?: number
+  air_quality?: number
+  traffic_quality?: number
 }
 
 type LocationResponse = {

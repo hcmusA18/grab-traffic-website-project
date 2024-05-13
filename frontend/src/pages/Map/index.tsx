@@ -11,14 +11,15 @@ import {
   ScaleControl
 } from 'react-map-gl'
 import { FeatureCollection, Point } from 'geojson'
-import { useAppDispatch, setShowDetails, useAppSelector } from 'libs/redux'
+import { useAppDispatch, setShowDetails, useAppSelector, useInitEnvironData } from 'libs/redux'
 import { Details } from 'components/Details'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import './index.css'
 import reactIcon from 'assets/react.svg'
 import { Spin } from 'antd'
 import { distance, point } from '@turf/turf'
-import { setCurrentAirData, setCurrentLocationID, setCurrentTrafficData } from 'libs/redux/sliceData'
+import { setCurrentLocationID } from 'libs/redux/sliceData'
+import { colors } from 'theme/colors'
 
 export const MapPage = () => {
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
@@ -27,6 +28,7 @@ export const MapPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [hasData, setHasData] = useState(false)
   const dispatch = useAppDispatch()
+  useInitEnvironData()
 
   useEffect(() => {
     if (locations.length > 0 || locations) {
@@ -43,7 +45,12 @@ export const MapPage = () => {
       type: 'FeatureCollection',
       features: locations.map((location) => ({
         type: 'Feature',
-        properties: { place: location.place, request: location.request },
+        properties: {
+          place: location.place,
+          request: location.request,
+          id: location.id,
+          air_quality: location.air_quality
+        },
         geometry: {
           type: 'Point',
           coordinates: [parseFloat(location.long ?? '106.692330564'), parseFloat(location.lat ?? '10.770496918')]
@@ -58,7 +65,19 @@ export const MapPage = () => {
     source: 'districts',
     filter: ['has', 'point_count'],
     paint: {
-      'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
+      'circle-color': [
+        'match',
+        ['get', 'air_quality'],
+        1,
+        colors.green200,
+        2,
+        colors.yellow200,
+        3,
+        colors.orange200,
+        4,
+        colors.red200,
+        colors.dark200
+      ],
       'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
     }
   }
@@ -68,9 +87,30 @@ export const MapPage = () => {
     source: 'districts',
     filter: ['has', 'point_count'],
     layout: {
-      'text-field': '{point_count_abbreviated}',
+      'text-field': '{air_quality}',
       'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+      'text-color': '#fff',
       'text-size': 12
+    },
+    paint: {
+      'text-color': '#fff',
+      'text-halo-color': '#d8d8d8'
+    }
+  }
+
+  const unclusteredQualityLayer = {
+    id: 'unclustered-quality',
+    type: 'symbol',
+    source: 'districts',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+      'text-field': '{air_quality}',
+      'text-justify': 'auto',
+      'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+      'text-size': 12
+    },
+    paint: {
+      'text-color': '#fff'
     }
   }
 
@@ -80,25 +120,41 @@ export const MapPage = () => {
     source: 'districts',
     filter: ['!', ['has', 'point_count']],
     paint: {
-      'circle-color': '#11b4da',
+      'circle-color': [
+        'case',
+        ['==', ['get', 'air_quality'], 1],
+        colors.green,
+        ['==', ['get', 'air_quality'], 2],
+        colors.yellow,
+        ['==', ['get', 'air_quality'], 3],
+        colors.orange,
+        ['==', ['get', 'air_quality'], 4],
+        colors.red,
+        ['==', ['get', 'air_quality'], 5],
+        colors.dark,
+        colors.dark
+      ],
       'circle-radius': 20,
       'circle-stroke-width': 1,
       'circle-stroke-color': '#fff'
     }
   }
 
-  const zoomToDistrict = (e: MapLayerMouseEvent, location: MapLocation) => {
+  const zoomToDistrict = (e: MapLayerMouseEvent, location?: MapLocation) => {
     e.originalEvent.stopPropagation()
-    const { long, lat } = location
+    const { long, lat } = location ?? { long: e.lngLat.lng.toString(), lat: e.lngLat.lat.toString() }
     if (mapRef.current) {
       const { lng: currentLong, lat: currentLat } = mapRef.current.getMap().getCenter()
       const currentLocation = point([currentLong, currentLat])
-      const targetLocation = point([parseFloat(long ?? '10.770496918'), parseFloat(lat ?? '106.692330564')])
+      const targetLocation = point([
+        parseFloat(long ?? e.lngLat.lng.toString()),
+        parseFloat(lat ?? e.lngLat.lat.toString())
+      ])
       const km = distance(currentLocation, targetLocation, 'kilometers')
 
       mapRef.current.easeTo({
-        center: [parseFloat(long ?? '10.770496918'), parseFloat(lat ?? '106.692330564')],
-        duration: km * 1000,
+        center: targetLocation.geometry.coordinates as [number, number],
+        duration: km * 400,
         zoom: 16,
         essential: true
       })
@@ -116,9 +172,7 @@ export const MapPage = () => {
       if (districtData) {
         zoomToDistrict(event, districtData)
         dispatch(setShowDetails({ showDetails: true, district: districtData.place }))
-        dispatch(setCurrentLocationID(districtData.id ?? ''))
-        dispatch(setCurrentAirData(undefined))
-        dispatch(setCurrentTrafficData(undefined))
+        dispatch(setCurrentLocationID(districtData!.id))
       }
     }
   }
@@ -196,10 +250,14 @@ export const MapPage = () => {
             data={geojson || undefined}
             cluster={true}
             clusterMaxZoom={14}
-            clusterRadius={50}>
+            clusterRadius={50}
+            clusterProperties={{
+              air_quality: ['max', ['get', 'air_quality']]
+            }}>
             <Layer {...(clusterLayer as LayerProps)} />
             <Layer {...(clusterCountLayer as LayerProps)} />
             <Layer {...(unclusteredPointLayer as LayerProps)} />
+            <Layer {...(unclusteredQualityLayer as LayerProps)} />
           </Source>
         )}
       </Map>

@@ -11,6 +11,7 @@ import React, { useEffect, useState } from 'react'
 import { FaChevronRight } from 'react-icons/fa'
 import { Spin, Tabs, TabsProps, theme } from 'antd'
 import StickyBox from 'react-sticky-box'
+import dayjs from 'libs/utils/dayjsConfig'
 import { AirQuality } from './AirQuality'
 import { Weather } from './Weather'
 import { Traffic } from './Traffic'
@@ -53,7 +54,6 @@ export const Details = () => {
     }
   }, [trafficData, airData])
 
-
   const tabsItems = [
     {
       key: 'airq',
@@ -86,7 +86,7 @@ export const Details = () => {
           <div></div>
           <div className="flex flex-col items-center justify-center">
             <h2 className="text-lg font-bold">{district}</h2>
-            <p className="text-xs leading-3">11:09PM, Th04 06 2024</p>
+            <p className="text-xs leading-3">{dayjs().format('HH:mm DD/MM/YYYY')}</p>
           </div>
           <button
             onClick={() => {
@@ -100,7 +100,7 @@ export const Details = () => {
           </button>
         </div>
 
-        {!isLoading && <Tabs defaultActiveKey="airq" centered items={tabsItems} renderTabBar={CustomTabBar} />}
+        <Tabs defaultActiveKey="airq" centered items={tabsItems} renderTabBar={CustomTabBar} />
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { Statistic, StatisticProps } from 'antd'
+import { useAppSelector } from 'libs/redux'
 import CountUp from 'react-countup'
 
 const formatter: StatisticProps['formatter'] = (value) => <CountUp end={value as number} separator="." />
@@ -9,9 +10,22 @@ const Items = ({ title, value }: { title: string; value: string | number }) => (
   </div>
 )
 
-export const StatisticPane = ({ className }: { className?: string }) => {
+interface StatisticPaneProps {
+  className?: string
+  location: string
+}
+
+export const StatisticPane = ({ className, location }: StatisticPaneProps) => {
+  const { mapLocation } = useAppSelector((state) => state.data)
+
   return (
     <div className={className ?? ''}>
+      {/* auto reload image after 5 seconds */}
+      <img
+        src={mapLocation.find((loc) => loc.id === parseInt(location))?.request}
+        alt="location"
+        className="h-48 w-full rounded-md object-cover"
+      />
       <div className="flex w-full items-center justify-between">
         <span className="font-medium md:text-lg">Rush hours</span>
         <span className="text-red-500 md:text-lg">7AM - 9AM</span>

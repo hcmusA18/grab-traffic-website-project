@@ -51,7 +51,6 @@ export const useInitEnvironData = () => {
         console.error('Error fetching environ data:', error)
       }
     }
-
     fetchEnvironData()
   }, [currentLocationID, dispatch, environService])
 }

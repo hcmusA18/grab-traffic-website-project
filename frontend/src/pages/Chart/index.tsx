@@ -97,7 +97,10 @@ export const ChartPage = () => {
       <div className="col-span-full grid grid-cols-1 gap-4 md:grid-cols-12">
         <div className="grid grid-cols-1 gap-4 md:col-span-12 md:grid-cols-12">
           <CombineChart location={location} startDate={startDate} endDate={endDate} />
-          <StatisticPane className="border-1 col-span-1 rounded-md border border-gray-200 p-8 md:col-span-4" />
+          <StatisticPane
+            className="border-1 col-span-1 rounded-md border border-gray-200 p-8 md:col-span-4"
+            location={location}
+          />
         </div>
         <LocationList locationId={location} onChangeLocation={setLocation} />
       </div>
