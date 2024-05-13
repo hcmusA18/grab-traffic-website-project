@@ -38,9 +38,9 @@ export class RankingService implements IRankingService {
       }
 
       if (request.option === 'air') {
-        rankings.air_ranking = this.mapRanking(response.ranking, 'ranking')
+        rankings.air_ranking = this.mapRanking(response.ranking, 'air_quality_index')
       } else if (request.option === 'traffic') {
-        rankings.traffic_ranking = this.mapRanking(response.ranking, 'ranking')
+        rankings.traffic_ranking = this.mapRanking(response.ranking, 'traffic_quality_index')
       } else {
         rankings.air_ranking = this.mapRanking(response.air_ranking, 'air_quality_index')
         rankings.traffic_ranking = this.mapRanking(response.traffic_ranking, 'traffic_quality_index')

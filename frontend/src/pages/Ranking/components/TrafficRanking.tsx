@@ -1,11 +1,6 @@
-import { fakerVI } from '@faker-js/faker'
 import { RankingBoard } from './RankingBoard'
 import { useEffect, useState } from 'react'
-
-const rankingData = Array.from({ length: fakerVI.number.int({ min: 10, max: 20 }) }, () => ({
-  location: fakerVI.location.city(),
-  value: fakerVI.number.int({ min: 0, max: 1000 })
-}))
+import { RankingService } from 'services/RankingService'
 
 const rankingOptions = {
   title: 'Traffic Ranking',
@@ -24,20 +19,21 @@ const rankingOptions = {
 }
 
 export const TrafficRanking = () => {
-  const [data, setData] = useState<Ranking[]>(rankingData)
+  const [data, setData] = useState<Ranking[]>([])
+  const rankingService = RankingService.getInstance()
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setData((data) => {
-        const newData = data.map((item) => ({
-          ...item,
-          value: item.value + fakerVI.number.int({ min: -1, max: 1 }) * fakerVI.number.int({ min: 50, max: 100 })
-        }))
-        return newData
-      })
-    }, 5000)
+    const fetchData = async () => {
+      const rankingData = await rankingService.getCurrentRanking({ option: 'traffic' })
+      setData(rankingData.traffic_ranking || [])
+    }
+
+    fetchData()
+
+    const interval = setInterval(fetchData, 10000)
+
     return () => clearInterval(interval)
-  }, [])
+  }, [rankingService])
 
   return (
     <div className="rounded-md border px-2">

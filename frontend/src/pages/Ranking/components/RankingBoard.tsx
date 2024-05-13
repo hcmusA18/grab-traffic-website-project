@@ -106,14 +106,12 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
     const labels = ranking.map((rank) => rank[columns[0].key])
     const data = ranking.map((rank) => rank[columns[1].key])
 
-    const sortedData = data.sort((a, b) => Number(b) - Number(a))
-
     const datasets: ChartData<'bar'>['datasets'] = [
       {
         label: columns[1].title,
-        data: sortedData.map((value: string | number) => Number(value)),
-        backgroundColor: sortedData.map((value: number | string) => getColorForValue(value as number, color)),
-        borderColor: sortedData.map((value: number | string) => getColorForValue(value as number, color)),
+        data: data.map((value: string | number) => Number(value)),
+        backgroundColor: data.map((value: number | string) => getColorForValue(value as number, color)),
+        borderColor: data.map((value: number | string) => getColorForValue(value as number, color)),
         borderWidth: 1
       }
     ]

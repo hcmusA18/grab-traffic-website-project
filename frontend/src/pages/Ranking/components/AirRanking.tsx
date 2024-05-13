@@ -1,12 +1,8 @@
-import { fakerVI } from '@faker-js/faker'
 import { RankingBoard } from './RankingBoard'
 import { useEffect, useState } from 'react'
 import { colors } from 'theme'
+import { RankingService } from 'services/RankingService'
 
-const rankingData = Array.from({ length: fakerVI.number.int({ min: 10, max: 20 }) }, () => ({
-  location: fakerVI.location.city(),
-  value: fakerVI.number.int({ min: 0, max: 350 })
-}))
 
 const rankingOptions = {
   title: 'Air Quality Ranking',
@@ -25,20 +21,21 @@ const rankingOptions = {
 }
 
 export const AirRanking = () => {
-  const [data, setData] = useState<Ranking[]>(rankingData)
+  const [data, setData] = useState<Ranking[]>([])
+  const rankingService = RankingService.getInstance()
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setData((data) => {
-        const newData = data.map((item) => ({
-          ...item,
-          value: item.value + fakerVI.number.int({ min: -10, max: 10 })
-        }))
-        return newData
-      })
-    }, 5000)
+    const fetchData = async () => {
+      const rankingData = await rankingService.getCurrentRanking({ option: 'air' })
+      setData(rankingData.air_ranking || [])
+    }
+
+    fetchData()
+
+    const interval = setInterval(fetchData, 10000)
+
     return () => clearInterval(interval)
-  }, [])
+  }, [rankingService])
 
   return (
     <div className="box-border rounded-md border px-2">
