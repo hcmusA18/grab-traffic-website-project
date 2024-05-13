@@ -1,15 +1,16 @@
 /* eslint-disable no-console */
 'use client'
 import { useEffect, useState } from 'react'
-import { trafficAirDataService } from '../../services/trafficAirDataService'
+import { RankingService } from 'services'
 
 export const TestPage = () => {
   const [error, setError] = useState<string>('')
+  const enviroService = RankingService.getInstance()
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const data = await trafficAirDataService.getWeeklyData({ id: '24', date: '2024-05-10' })
+        const data = await enviroService.getCurrentRanking({ option: 'both' })
         console.log(data)
       } catch (error: unknown) {
         console.log(error)
@@ -22,7 +23,7 @@ export const TestPage = () => {
     }
 
     fetchLocations()
-  }, [])
+  }, [enviroService])
 
   if (error) {
     return <div>Error: {error}</div>

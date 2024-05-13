@@ -1,4 +1,4 @@
-interface Location {
+type MapLocation = {
   id: number
   place: string
   lat?: string
@@ -7,64 +7,67 @@ interface Location {
   distance?: number
 }
 
-interface LocationResponse {
+type LocationResponse = {
   count: number
-  time?: string
+  time?: string // time of data collection
   keyword?: string
   param?: {
     radius: string
     number: string
   }
-  center?: {
-    id: number
-    place: string
-  }
-  locations: Location[]
+  center?: MapLocation
+  locations: MapLocation[]
 }
 
-interface LocationRequest {
+type LocationRequest = {
   id?: string
   keyword?: string
   radius?: string
   number?: string
 }
 
-interface TrafficData {
+type TrafficData = {
   day?: number
   hour?: number
-  car: number
-  bike: number
-  truck: number
-  bus: number
-  person: number
-  motorbike: number
+  car?: number
+  bike?: number
+  truck?: number
+  bus?: number
+  person?: number
+  motorbike?: number
   count?: number
   traffic_quality?: number
-  trafic_quality_index?: number
+  traffic_quality_index?: number
 }
 
-interface AirData {
+type AirData = {
   day?: number
   hour?: number
-  co: number
-  no: number
-  no2: number
-  o3: number
-  so2: number
-  pm2_5: number
-  pm10: number
-  nh3: number
+  co?: number
+  no?: number
+  no2?: number
+  o3?: number
+  so2?: number
+  pm2_5?: number
+  pm10?: number
+  nh3?: number
   count?: number
   air_quality?: number
   air_quality_index?: number
 }
 
-interface TrafficAirData {
+type TrafficAirData = {
   traffic_data?: TrafficData
   air_data?: AirData
 }
 
-interface TrafficAirDataResponse {
+type QualityIndex = {
+  hour?: number
+  traffic_quality_index?: number
+  air_quality_index?: number
+}
+
+type TrafficAirDataResponse = {
   id: number
   name: string
   lat: string
@@ -78,13 +81,47 @@ interface TrafficAirDataResponse {
   air_data_hour?: AirData[]
   traffic_data_day?: TrafficData[]
   air_data_day?: AirData[]
+  data_hour?: QualityIndex[]
 }
 
-interface TrafficAirDataRequest {
+type TrafficAirDataRequest = {
   id?: string
   date?: string
+  startDate?: string
+  endDate?: string
 }
+
+type RankingRequest = {
+  option: string
+  date?: string
+}
+
+type RankingResponse = {
+  time?: string
+  date?: string
+  count: number
+  option: string
+  ranking?: RankingData[]
+  traffic_ranking?: RankingData[]
+  air_ranking?: RankingData[]
+}
+
+type RankingData = {
+  id: number
+  name: string
+  traffic_quality_index?: number
+  air_quality_index?: number
+  rank: number
+}
+
 type Ranking<T = number> = {
   location: string
   value: T
+}
+
+type RecordValue = string | Blob | File | number | boolean | null
+
+interface HttpService {
+  get<T>(url: string): Promise<T>
+  post<T, U extends Record<string, RecordValue>>(url: string, data?: U): Promise<T>
 }

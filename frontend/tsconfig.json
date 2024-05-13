@@ -28,7 +28,11 @@
       "pages/*": ["./src/pages/*"],
       "types/*": ["./src/types/*"],
       "assets/*": ["./src/assets/*"],
-      "data/*": ["./data/*"]
+      "data/*": ["./data/*"],
+      "services/*": ["./src/services/*"],
+      "services": ["./src/services/index.ts"],
+      "theme/*": ["./src/theme/*"],
+      "theme": ["./src/theme/index.ts"]
     }
   },
   "include": ["src"],

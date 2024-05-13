@@ -53,7 +53,9 @@ const DesktopSidebar = () => (
 
 const MobileSidebar = () => {
   const [visible, setVisible] = useState(false)
-  const toggleDrawer = () => setVisible(!visible)
+  const toggleDrawer = () => {
+    setVisible(!visible)
+  }
   const location = useLocation()
   useEffect(() => {
     setVisible(false)

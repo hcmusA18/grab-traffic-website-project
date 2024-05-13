@@ -16,15 +16,25 @@ interface DateInputProps {
   isWeekly: boolean
   onChange: CalendarChangeProps
   disableDate: DatePickerProps['disabledDate']
+  defaultPickerDate?: [Dayjs, Dayjs]
+  defaultDate?: Dayjs
 }
 
-export const DateInput: React.FC<DateInputProps> = ({ className, isWeekly, onChange, disableDate }: DateInputProps) => {
+export const DateInput: React.FC<DateInputProps> = ({
+  className,
+  isWeekly,
+  onChange,
+  disableDate,
+  defaultPickerDate,
+  defaultDate
+}: DateInputProps) => {
   return isWeekly ? (
     <RangePicker
       className={className ?? ''}
       format={dateFormat}
       onCalendarChange={onChange}
       disabledDate={disableDate}
+      defaultValue={defaultPickerDate}
       maxDate={dayjs().add(7, 'day')}
     />
   ) : (
@@ -33,6 +43,7 @@ export const DateInput: React.FC<DateInputProps> = ({ className, isWeekly, onCha
       format={dateFormat}
       onCalendarChange={onChange}
       disabledDate={disableDate}
+      defaultValue={defaultDate}
       maxDate={dayjs().add(7, 'day')}
     />
   )

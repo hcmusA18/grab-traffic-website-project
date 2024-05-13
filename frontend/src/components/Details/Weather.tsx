@@ -1,6 +1,4 @@
 import React from 'react'
-import { FaSmog, FaWind } from 'react-icons/fa'
-import { FaGaugeHigh } from 'react-icons/fa6'
 
 interface ItemProps {
   leadingIcon?: React.ReactNode
@@ -23,9 +21,13 @@ const Item: React.FC<ItemProps> = ({ leadingIcon, title, value, unit }) => (
 
 export const Weather = () => (
   <div className="flex flex-col rounded-md border-2 border-gray-200 p-4">
-    <Item title={'33°C'} value={'Cloudy'} unit={''} />
-    <Item title={'Humidity'} value={'50'} unit={'%'} leadingIcon={<FaSmog className="text-xl" />} />
-    <Item title={'Wind'} value={'10'} unit={'km/h'} leadingIcon={<FaWind className="text-xl" />} />
-    <Item title={'Pressure'} value={'1013'} unit={'hPa'} leadingIcon={<FaGaugeHigh className="text-xl" />} />
+    <Item title={'CO'} value={'1.2'} unit={'mg/m3'} />
+    <Item title={'NO'} value={'0.02'} unit={'mg/m3'} />
+    <Item title={'NO2'} value={'0.01'} unit={'mg/m3'} />
+    <Item title={'O3'} value={'0.05'} unit={'mg/m3'} />
+    <Item title={'SO2'} value={'0.01'} unit={'mg/m3'} />
+    <Item title={'PM2.5'} value={'10'} unit={'µg/m3'} />
+    <Item title={'PM10'} value={'20'} unit={'µg/m3'} />
+    <Item title={'NH3'} value={'0.01'} unit={'mg/m3'} />
   </div>
 )
