@@ -1,3 +1,4 @@
+import { useAppSelector } from 'libs/redux'
 import React from 'react'
 
 interface ItemProps {
@@ -19,15 +20,19 @@ const Item: React.FC<ItemProps> = ({ leadingIcon, title, value, unit }) => (
   </div>
 )
 
-export const Weather = () => (
-  <div className="flex flex-col rounded-md border-2 border-gray-200 p-4">
-    <Item title={'CO'} value={'1.2'} unit={'mg/m3'} />
-    <Item title={'NO'} value={'0.02'} unit={'mg/m3'} />
-    <Item title={'NO2'} value={'0.01'} unit={'mg/m3'} />
-    <Item title={'O3'} value={'0.05'} unit={'mg/m3'} />
-    <Item title={'SO2'} value={'0.01'} unit={'mg/m3'} />
-    <Item title={'PM2.5'} value={'10'} unit={'µg/m3'} />
-    <Item title={'PM10'} value={'20'} unit={'µg/m3'} />
-    <Item title={'NH3'} value={'0.01'} unit={'mg/m3'} />
-  </div>
-)
+export const Weather = () => {
+  const weatherData = useAppSelector((state) => state.data.currentAirData)
+
+  return (
+    <div className="flex flex-col rounded-md border-2 border-gray-200 p-4">
+      <Item title={'CO'} value={weatherData?.co?.toString() ?? ''} unit={'mg/m3'} />
+      <Item title={'NO'} value={weatherData?.no?.toString() ?? ''} unit={'mg/m3'} />
+      <Item title={'NO2'} value={weatherData?.no2?.toString() ?? ''} unit={'mg/m3'} />
+      <Item title={'O3'} value={weatherData?.o3?.toString() ?? ''} unit={'mg/m3'} />
+      <Item title={'SO2'} value={weatherData?.so2?.toString() ?? ''} unit={'mg/m3'} />
+      <Item title={'PM2.5'} value={weatherData?.pm2_5?.toString() ?? ''} unit={'µg/m3'} />
+      <Item title={'PM10'} value={weatherData?.pm10?.toString() ?? ''} unit={'µg/m3'} />
+      <Item title={'NH3'} value={weatherData?.nh3?.toString() ?? ''} unit={'mg/m3'} />
+    </div>
+  )
+}

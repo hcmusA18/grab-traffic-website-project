@@ -14,6 +14,7 @@ import { Spin, Tabs, TabsProps, theme } from 'antd'
 import StickyBox from 'react-sticky-box'
 import { AirQuality } from './AirQuality'
 import { Weather } from './Weather'
+import { Traffic } from './Traffic'
 
 const CustomTabPane: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <div className="flex flex-col gap-4">{children}</div>
@@ -35,16 +36,7 @@ const tabsItems = [
     label: 'Traffic',
     children: (
       <CustomTabPane key="traffic">
-        <div className="flex flex-col items-center">
-          <img
-            src="https://images.unsplash.com/photo-1579353977828-2a4eab540b9a"
-            width={400}
-            height={200}
-            style={{ objectFit: 'cover' }}
-            className="rounded-md"
-            alt="camera"
-          />
-        </div>
+        <Traffic />
       </CustomTabPane>
     )
   }
