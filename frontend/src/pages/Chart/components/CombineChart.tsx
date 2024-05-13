@@ -11,9 +11,9 @@ import {
   Tooltip,
   Legend,
   ChartOptions,
-  ChartDataset
+  ChartData
 } from 'chart.js'
-import { Chart, ChartProps } from 'react-chartjs-2'
+import { Chart } from 'react-chartjs-2'
 import { faker } from '@faker-js/faker'
 import type { Dayjs } from 'dayjs'
 import { EnviroService } from 'services'
@@ -114,7 +114,7 @@ export const data = {
       borderWidth: 2
     }
   ]
-}
+} as ChartData<'bar'>
 
 interface CombineChartProps {
   location: string // location id
@@ -152,7 +152,7 @@ const fetchWeeklyData = async (location: string, startDate: string, endDate: str
 export const CombineChart = ({ location, startDate, endDate }: CombineChartProps) => {
   const environService = useMemo(() => EnviroService.getInstance(), [])
   const { mapLocation } = useAppSelector((state: RootState) => state.data)
-  const [chartData, setChartData] = useState<ChartProps['data']>(data)
+  const [chartData, setChartData] = useState<ChartData<'bar' | 'line'>>(data)
   const [chartOptions, setChartOptions] = useState<ChartOptions<'bar'>>(defaultChartOptions)
   const [loading, setLoading] = useState(false)
   const chartRef = useRef(null)
@@ -184,7 +184,7 @@ export const CombineChart = ({ location, startDate, endDate }: CombineChartProps
           borderJoinStyle: 'round',
           data: data.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0),
           yAxisID: 'y'
-        } as ChartDataset
+        } as ChartData<'line'>['datasets'][0]
 
         const airQualityDataset = {
           type: 'bar' as const,
@@ -194,7 +194,7 @@ export const CombineChart = ({ location, startDate, endDate }: CombineChartProps
           borderWidth: 2,
           data: data.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0),
           yAxisID: 'y1'
-        } as ChartDataset
+        } as ChartData<'bar'>['datasets'][0]
 
         setChartData({
           labels,
@@ -248,7 +248,7 @@ export const CombineChart = ({ location, startDate, endDate }: CombineChartProps
   return (
     <div className="h-[20rem] w-full rounded-md border border-gray-200 md:col-span-8 md:h-[32rem]">
       <Spin spinning={loading} tip="Loading..." fullscreen />
-      <Chart ref={chartRef} type="bar" data={chartData} options={chartOptions} />
+      <Chart ref={chartRef} type="bar" data={chartData as ChartData<'bar'>} options={chartOptions} />
     </div>
   )
 }

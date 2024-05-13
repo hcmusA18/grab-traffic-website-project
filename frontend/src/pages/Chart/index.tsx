@@ -75,7 +75,6 @@ export const ChartPage = () => {
           onChange={searchHandler}
           onSelect={selectHandler}
           defaultValue={options[0]?.value}
-          value={mapLocation.find((v) => v.id.toString() === location)?.place}
           placeholder="Enter location"
         />
         <DateInput
