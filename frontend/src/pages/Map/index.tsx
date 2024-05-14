@@ -26,6 +26,7 @@ export const MapPage = () => {
   const mapRef = useRef<MapRef>(null)
   const locations = useAppSelector((state) => state.data.mapLocation)
   const [isLoading, setIsLoading] = useState(true)
+  const [isStyleLoaded, setIsStyleLoaded] = useState(false)
   const [hasData, setHasData] = useState(false)
   const dispatch = useAppDispatch()
   useInitEnvironData()
@@ -212,6 +213,10 @@ export const MapPage = () => {
     }
   }, [mapRef, isLoading])
 
+  mapRef.current?.on('styledata', function () {
+    setIsStyleLoaded(true)
+  })
+
   return (
     <div className="flex h-full w-full flex-1">
       <Spin spinning={isLoading} fullscreen size="large" tip="Loading..." />
@@ -236,29 +241,35 @@ export const MapPage = () => {
         interactiveLayerIds={['unclustered-point']}
         onClick={handleMapClick}
         attributionControl={false}>
-        <ScaleControl maxWidth={100} unit="metric" />
-        <NavigationControl showCompass showZoom position="bottom-right" />
-        <GeolocateControl positionOptions={{ enableHighAccuracy: true }} trackUserLocation position="bottom-right" />
-        <Source id="traffic" type="vector" url="mapbox://mapbox.mapbox-traffic-v1">
-          <Layer {...(trafficLayer as LayerProps)} />
-        </Source>
+        {isStyleLoaded === true && hasData && (
+          <div>
+            <ScaleControl maxWidth={100} unit="metric" />
+            <NavigationControl showCompass showZoom position="bottom-right" />
+            <GeolocateControl
+              positionOptions={{ enableHighAccuracy: true }}
+              trackUserLocation
+              position="bottom-right"
+            />
+            <Source id="traffic" type="vector" url="mapbox://mapbox.mapbox-traffic-v1">
+              <Layer {...(trafficLayer as LayerProps)} />
+            </Source>
 
-        {!isLoading && hasData && (
-          <Source
-            id="districts"
-            type="geojson"
-            data={geojson || undefined}
-            cluster={true}
-            clusterMaxZoom={14}
-            clusterRadius={50}
-            clusterProperties={{
-              air_quality: ['max', ['get', 'air_quality']]
-            }}>
-            <Layer {...(clusterLayer as LayerProps)} />
-            <Layer {...(clusterCountLayer as LayerProps)} />
-            <Layer {...(unclusteredPointLayer as LayerProps)} />
-            <Layer {...(unclusteredQualityLayer as LayerProps)} />
-          </Source>
+            <Source
+              id="districts"
+              type="geojson"
+              data={geojson || undefined}
+              cluster={true}
+              clusterMaxZoom={14}
+              clusterRadius={50}
+              clusterProperties={{
+                air_quality: ['max', ['get', 'air_quality']]
+              }}>
+              <Layer {...(clusterLayer as LayerProps)} />
+              <Layer {...(clusterCountLayer as LayerProps)} />
+              <Layer {...(unclusteredPointLayer as LayerProps)} />
+              <Layer {...(unclusteredQualityLayer as LayerProps)} />
+            </Source>
+          </div>
         )}
       </Map>
       <Details />
