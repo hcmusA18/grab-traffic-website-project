@@ -7,6 +7,7 @@ export const unclusteredQualityLayer = {
   source: 'districts',
   filter: ['!', ['has', 'point_count']],
   layout: {
+    'icon-image': 'pin',
     'text-field': '{air_quality}',
     'text-justify': 'auto',
     'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
@@ -19,9 +20,13 @@ export const unclusteredQualityLayer = {
 
 export const unclusteredPointLayer = {
   id: 'unclustered-point',
-  type: 'circle',
+  type: 'symbol',
   source: 'districts',
   filter: ['!', ['has', 'point_count']],
+  layout: {
+    'icon-image': 'pin',
+    'icon-size': 0.5
+  },
   paint: {
     'circle-color': [
       'case',

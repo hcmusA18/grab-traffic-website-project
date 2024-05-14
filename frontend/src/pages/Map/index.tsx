@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { Map, MapRef, Source, Layer, MapLayerMouseEvent } from 'react-map-gl'
+import { Map, MapRef, Source, Layer, MapLayerMouseEvent, Marker } from 'react-map-gl'
 import { FeatureCollection, Point } from 'geojson'
 import { useAppDispatch, setShowDetails, useAppSelector, useInitEnvironData } from 'libs/redux'
 import { Details } from 'components/Details'
@@ -58,7 +59,6 @@ export const MapPage = () => {
   }, [locations])
 
   const zoomToDistrict = (e: MapLayerMouseEvent, location?: MapLocation) => {
-    e.originalEvent.stopPropagation()
     const { long, lat } = location ?? { long: e.lngLat.lng.toString(), lat: e.lngLat.lat.toString() }
     if (mapRef.current) {
       const { lng: currentLong, lat: currentLat } = mapRef.current.getMap().getCenter()
@@ -143,7 +143,7 @@ export const MapPage = () => {
               <Layer {...trafficLayer} />
             </Source>
 
-            <Source
+            {/* <Source
               id="districts"
               type="geojson"
               data={geojson || undefined}
@@ -157,9 +157,42 @@ export const MapPage = () => {
               <Layer {...clusterCountLayer} />
               <Layer {...unclusteredPointLayer} />
               <Layer {...unclusteredQualityLayer} />
-            </Source>
+            </Source> */}
           </div>
         )}
+        {locations.map((location, index) => {
+          return (
+            <Marker
+              key={location.id}
+              latitude={parseFloat(location.lat ?? '10.770496918')}
+              longitude={parseFloat(location.long ?? '106.692330564')}
+              anchor="bottom"
+              onClick={(e) => {
+                e.originalEvent.stopPropagation()
+                // zoomToDistrict(e, location)
+              }}>
+              <div className="disappearing-appearing-div" style={{ animationDelay: `${index * 2}s` }}>
+                <div
+                  style={{
+                    width: 140,
+                    height: 40,
+                    backgroundColor: '#ff4081',
+                    opacity: 0.8,
+                    alignItems: 'center',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    border: '1px solid white',
+                    borderRadius: 8
+                  }}>
+                  <h3 style={{ color: 'white', textAlign: 'center' }}>{location.place}</h3>
+                </div>
+                <div
+                  style={{ height: 64, width: 2, backgroundColor: '#ff4081', marginBottom: -20, marginLeft: 64 }}></div>
+                <div className="pulsing-dot" />
+              </div>
+            </Marker>
+          )
+        })}
       </Map>
       <Details />
     </div>

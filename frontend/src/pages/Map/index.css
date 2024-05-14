@@ -5,3 +5,59 @@
   width: 100% !important;
   height: unset !important;
 }
+
+.pulsing-dot {
+  width: 120px;
+  height: 40px;
+  background-color: #ff4081;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1);
+  animation: pulse 2s infinite;
+  margin-left: 4px;
+  display: block;
+  cursor: 'pointer';
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.1);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes grow-up {
+  0% {
+    opacity: 1;
+    transform: scale(0);
+    visibility: visible;
+  }
+
+  8% {
+    transform: scale(1);
+    font-weight: 300;
+  }
+
+  99% {
+    opacity: 1;
+    transform: scale(1);
+    visibility: visible;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1);
+    visibility: visible;
+  }
+}
+
+.disappearing-appearing-div {
+  animation: grow-up 16s infinite ease-in-out;
+  transform-origin: bottom;
+}
