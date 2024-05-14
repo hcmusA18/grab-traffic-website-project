@@ -33,6 +33,7 @@ except Exception as e:
 database = client["grab-engineering-project"]
 Place_LatLong_API = database["Place_LatLong_API"]
 data_summary = database["data_summary"]
+future_summary = database["Predict_Future_Data"]
 
 # print("Working")
 # for i in range(126, 127):
