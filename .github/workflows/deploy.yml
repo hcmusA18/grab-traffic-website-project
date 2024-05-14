@@ -5,8 +5,21 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pull-requests: read
+  id-token: write
+  pages: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
 jobs:
     build:
+      environment: 
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
       name: Build
       runs-on: ubuntu-latest
       defaults:
@@ -21,42 +34,22 @@ jobs:
           uses: actions/setup-node@v3
           with:
             node-version: '20'
+            cache: 'npm'
 
         - name: Install dependencies
-          run: npm install
-
-        - name: Check dependencies
-          run: npm ls
-
-        - name: Check dependencies
-          run: npm ls
+          run: npm ci
 
         - name: Build project
           run: npm run build
+
+        - name: Setup Pages
+          uses: actions/configure-pages@v4
         
-        - name: Upload production-ready build files
-          uses: actions/upload-artifact@v2
+        - name: Upload artifact
+          uses: actions/upload-pages-artifact@v3
           with:
-            name: production-files
             path: ./dist
-
-    deploy:
-      name: Deploy
-      needs: build
-      runs-on: ubuntu-latest
-      if: github.ref == 'refs/heads/main'
-
-      steps:
-        - name: Download artifact
-          uses: actions/download-artifact@v2
-          with:
-            name: production-files
-            path: ./frontend/dist
         
         - name: Deploy to GitHub Pages
-          uses: peaceiris/actions-gh-pages@v3
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: ./frontend/dist
-            publish_branch: gh-pages
-
+          id: deployment
+          uses: actions/deploy-pages@v4
