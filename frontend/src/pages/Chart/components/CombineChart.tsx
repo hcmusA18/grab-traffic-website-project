@@ -16,11 +16,9 @@ import {
 import { Chart } from 'react-chartjs-2'
 import { faker } from '@faker-js/faker'
 import type { Dayjs } from 'dayjs'
-import { EnviroService } from 'services'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Spin } from 'antd'
 import { colors } from 'theme'
-import { RootState, useAppSelector } from 'libs/redux'
 
 ChartJS.register(
   CategoryScale,
@@ -117,9 +115,11 @@ export const data = {
 } as ChartData<'bar'>
 
 interface CombineChartProps {
-  location: string // location id
-  startDate: Dayjs | null
-  endDate: Dayjs | null
+  location: string
+  rawData: TrafficAirData[]
+  labels: string[]
+  startDate: Dayjs
+  endDate: Dayjs
 }
 
 const getColor = (value: number) => {
@@ -139,40 +139,15 @@ const getColor = (value: number) => {
   }
 }
 
-const fetchDailyData = async (location: string, date: string) => {
-  const data = await EnviroService.getInstance().getDailyData({ id: location, date })
-  return data
-}
-
-const fetchWeeklyData = async (location: string, startDate: string, endDate: string) => {
-  const data = await EnviroService.getInstance().getRangeData({ id: location, startDate, endDate })
-  return data
-}
-
-export const CombineChart = ({ location, startDate, endDate }: CombineChartProps) => {
-  const environService = useMemo(() => EnviroService.getInstance(), [])
-  const { mapLocation } = useAppSelector((state: RootState) => state.data)
+export const CombineChart = ({ location, rawData, labels, startDate, endDate }: CombineChartProps) => {
   const [chartData, setChartData] = useState<ChartData<'bar' | 'line'>>(data)
   const [chartOptions, setChartOptions] = useState<ChartOptions<'bar'>>(defaultChartOptions)
   const [loading, setLoading] = useState(false)
   const chartRef = useRef(null)
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true) // Move setLoading here to ensure it covers the fetch operation
-        if (!startDate || !endDate) {
-          throw new Error('Start date or end date is not provided.')
-        }
-
-        const formattedDate = startDate.format('YYYY-MM-DD')
-        const data = startDate.isSame(endDate, 'day')
-          ? await fetchDailyData(location, formattedDate)
-          : await fetchWeeklyData(location, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'))
-        const labels = startDate.isSame(endDate, 'day')
-          ? data.map((item: TrafficAirData) => `${item.traffic_data?.hour?.toString().padStart(2, '0')}:00`)
-          : Array.from({ length: 7 }, (_, i) => startDate.add(i, 'day').format('YYYY-MM-DD'))
-
+        setLoading(true)
         const trafficDataset = {
           type: 'line' as const,
           label: 'Traffic',
@@ -182,7 +157,7 @@ export const CombineChart = ({ location, startDate, endDate }: CombineChartProps
           fill: false,
           borderWidth: 4,
           borderJoinStyle: 'round',
-          data: data.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0),
+          data: rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0),
           yAxisID: 'y'
         } as ChartData<'line'>['datasets'][0]
 
@@ -192,7 +167,7 @@ export const CombineChart = ({ location, startDate, endDate }: CombineChartProps
           backgroundColor: (context: { raw: number }) => getColor(context.raw ?? 0),
           borderColor: 'white',
           borderWidth: 2,
-          data: data.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0),
+          data: rawData.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0),
           yAxisID: 'y1'
         } as ChartData<'bar'>['datasets'][0]
 
@@ -207,14 +182,14 @@ export const CombineChart = ({ location, startDate, endDate }: CombineChartProps
             ...defaultChartOptions.plugins,
             title: {
               display: true,
-              text: `${mapLocation.find((loc) => loc.id === parseInt(location))?.place ?? 'Ba Tháng Hai - Sư Vạn Hạnh'} ${startDate.format('YYYY-MM-DD')}${endDate.isSame(startDate, 'day') ? '' : ` to ${endDate.format('YYYY-MM-DD')}`}`
+              text: `${location ?? 'Ba Tháng Hai - Sư Vạn Hạnh'} ${startDate.format('YYYY-MM-DD')}${endDate.isSame(startDate, 'day') ? '' : ` to ${endDate.format('YYYY-MM-DD')}`}`
             }
           },
           scales: {
             y: {
               ...defaultChartOptions.scales?.y,
               suggestedMax:
-                Math.max(...data.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0)) * 1.3,
+                Math.max(...rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0)) * 1.3,
               title: {
                 display: true,
                 text: 'Traffic Quality Index'
@@ -223,7 +198,7 @@ export const CombineChart = ({ location, startDate, endDate }: CombineChartProps
             y1: {
               ...defaultChartOptions.scales?.y1,
               suggestedMax:
-                Math.max(...data.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0)) * 1.3,
+                Math.max(...rawData.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0)) * 1.3,
               title: {
                 display: true,
                 text: 'Air Quality Index'
@@ -239,12 +214,7 @@ export const CombineChart = ({ location, startDate, endDate }: CombineChartProps
     }
 
     fetchData()
-  }, [location, startDate, endDate, environService, mapLocation])
-
-  useEffect(() => {
-    if (mapLocation.length <= 0) setLoading(true)
-  }, [mapLocation])
-
+  }, [rawData, labels, location, startDate, endDate])
   return (
     <div className="h-[20rem] w-full rounded-md border border-gray-200 md:col-span-8 md:h-[32rem]">
       <Spin spinning={loading} tip="Loading..." fullscreen />

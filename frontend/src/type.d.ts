@@ -54,6 +54,7 @@ type AirData = {
   pm10?: number
   nh3?: number
   count?: number
+  average?: number
   air_quality?: number
   air_quality_index?: number
 }
@@ -65,6 +66,7 @@ type TrafficAirData = {
 
 type QualityIndex = {
   hour?: number
+  day?: number
   traffic_quality_index?: number
   air_quality_index?: number
 }
@@ -77,20 +79,18 @@ type TrafficAirDataResponse = {
   time?: string
   date?: string
   request: string
-  traffic_data?: TrafficData
   air_data?: AirData
-  traffic_data_hour?: TrafficData[]
-  air_data_hour?: AirData[]
-  traffic_data_day?: TrafficData[]
-  air_data_day?: AirData[]
+  traffic_data?: TrafficData
+  data_day?: QualityIndex[]
   data_hour?: QualityIndex[]
+  traffic?: TrafficData
+  average_air?: AirData
 }
 
 type TrafficAirDataRequest = {
   id?: string
   date?: string
-  startDate?: string
-  endDate?: string
+  range?: number
 }
 
 type RankingRequest = {

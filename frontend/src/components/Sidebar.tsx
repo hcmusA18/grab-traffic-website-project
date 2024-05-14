@@ -52,9 +52,7 @@ const DesktopSidebar: React.FC = () => (
   <div className="shadow-m sticky top-0 z-50 border-b border-gray-200 bg-white py-3">
     <div className="flex flex-row items-center justify-center px-1 py-0 sm:px-6">
       <div className="float-left w-48">
-        <h3
-          className="inline-block text-lg font-medium capitalize"
-          style={{ color: '#1890ff', fontFamily: 'Libre Baskerville, serif' }}>
+        <h3 className="inline-block text-lg capitalize" style={{ fontFamily: 'Lilita One, sans-serif' }}>
           Traffiker
         </h3>
       </div>
@@ -89,7 +87,7 @@ const MobileSidebar: React.FC = () => {
         closable={true}
         onClose={toggleDrawer}
         open={visible}
-        style={{ zIndex: 1000 }}>
+        style={{ zIndex: 1000, fontFamily: 'Lilita One, sans-serif' }}>
         <CustomMenu mode="inline" />
       </Drawer>
     </div>
