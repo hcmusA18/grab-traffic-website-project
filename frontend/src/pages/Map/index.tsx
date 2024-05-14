@@ -90,7 +90,6 @@ export const MapPage = () => {
     layout: {
       'text-field': '{air_quality}',
       'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-      'text-color': '#fff',
       'text-size': 12
     },
     paint: {
