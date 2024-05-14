@@ -106,3 +106,5 @@ export const ChartPage = () => {
     </div>
   )
 }
+
+export default ChartPage

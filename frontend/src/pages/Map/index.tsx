@@ -1,15 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import {
-  Map,
-  MapRef,
-  Source,
-  Layer,
-  MapLayerMouseEvent,
-  GeolocateControl,
-  LayerProps,
-  NavigationControl,
-  ScaleControl
-} from 'react-map-gl'
+import { Map, MapRef, Source, Layer, MapLayerMouseEvent } from 'react-map-gl'
 import { FeatureCollection, Point } from 'geojson'
 import { useAppDispatch, setShowDetails, useAppSelector, useInitEnvironData } from 'libs/redux'
 import { Details } from 'components/Details'
@@ -19,7 +9,14 @@ import reactIcon from 'assets/react.svg'
 import { Spin } from 'antd'
 import { distance, point } from '@turf/turf'
 import { setCurrentLocationID } from 'libs/redux/sliceData'
-import { colors } from 'theme/colors'
+import MapControls from './components/MapControls'
+import {
+  clusterCountLayer,
+  clusterLayer,
+  unclusteredPointLayer,
+  unclusteredQualityLayer,
+  trafficLayer
+} from './components/layers'
 
 export const MapPage = () => {
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
@@ -60,86 +57,6 @@ export const MapPage = () => {
     }
   }, [locations])
 
-  const clusterLayer = {
-    id: 'clusters',
-    type: 'circle',
-    source: 'districts',
-    filter: ['has', 'point_count'],
-    paint: {
-      'circle-color': [
-        'match',
-        ['get', 'air_quality'],
-        1,
-        colors.green200,
-        2,
-        colors.yellow200,
-        3,
-        colors.orange200,
-        4,
-        colors.red200,
-        colors.dark200
-      ],
-      'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
-    }
-  }
-  const clusterCountLayer = {
-    id: 'cluster-count',
-    type: 'symbol',
-    source: 'districts',
-    filter: ['has', 'point_count'],
-    layout: {
-      'text-field': '{air_quality}',
-      'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-      'text-size': 12
-    },
-    paint: {
-      'text-color': '#fff',
-      'text-halo-color': '#d8d8d8'
-    }
-  }
-
-  const unclusteredQualityLayer = {
-    id: 'unclustered-quality',
-    type: 'symbol',
-    source: 'districts',
-    filter: ['!', ['has', 'point_count']],
-    layout: {
-      'text-field': '{air_quality}',
-      'text-justify': 'auto',
-      'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-      'text-size': 12
-    },
-    paint: {
-      'text-color': '#fff'
-    }
-  }
-
-  const unclusteredPointLayer = {
-    id: 'unclustered-point',
-    type: 'circle',
-    source: 'districts',
-    filter: ['!', ['has', 'point_count']],
-    paint: {
-      'circle-color': [
-        'case',
-        ['==', ['get', 'air_quality'], 1],
-        colors.green,
-        ['==', ['get', 'air_quality'], 2],
-        colors.yellow,
-        ['==', ['get', 'air_quality'], 3],
-        colors.orange,
-        ['==', ['get', 'air_quality'], 4],
-        colors.red,
-        ['==', ['get', 'air_quality'], 5],
-        colors.dark,
-        colors.dark
-      ],
-      'circle-radius': 20,
-      'circle-stroke-width': 1,
-      'circle-stroke-color': '#fff'
-    }
-  }
-
   const zoomToDistrict = (e: MapLayerMouseEvent, location?: MapLocation) => {
     e.originalEvent.stopPropagation()
     const { long, lat } = location ?? { long: e.lngLat.lng.toString(), lat: e.lngLat.lat.toString() }
@@ -172,30 +89,8 @@ export const MapPage = () => {
       if (districtData) {
         zoomToDistrict(event, districtData)
         dispatch(setShowDetails({ showDetails: true, district: districtData.place }))
-        dispatch(setCurrentLocationID(districtData!.id))
+        dispatch(setCurrentLocationID(districtData.id))
       }
-    }
-  }
-
-  const trafficLayer = {
-    id: 'traffic',
-    type: 'line',
-    source: 'traffic',
-    'source-layer': 'traffic',
-    paint: {
-      'line-color': [
-        'case',
-        ['==', ['get', 'congestion'], 'low'],
-        '#00ff00',
-        ['==', ['get', 'congestion'], 'moderate'],
-        '#ffff00',
-        ['==', ['get', 'congestion'], 'heavy'],
-        '#ff0000',
-        ['==', ['get', 'congestion'], 'severe'],
-        '#8b0000',
-        '#000000'
-      ],
-      'line-width': 4
     }
   }
 
@@ -242,15 +137,10 @@ export const MapPage = () => {
         attributionControl={false}>
         {isStyleLoaded === true && hasData && (
           <div>
-            <ScaleControl maxWidth={100} unit="metric" />
-            <NavigationControl showCompass showZoom position="bottom-right" />
-            <GeolocateControl
-              positionOptions={{ enableHighAccuracy: true }}
-              trackUserLocation
-              position="bottom-right"
-            />
+            <MapControls />
+
             <Source id="traffic" type="vector" url="mapbox://mapbox.mapbox-traffic-v1">
-              <Layer {...(trafficLayer as LayerProps)} />
+              <Layer {...trafficLayer} />
             </Source>
 
             <Source
@@ -263,10 +153,10 @@ export const MapPage = () => {
               clusterProperties={{
                 air_quality: ['max', ['get', 'air_quality']]
               }}>
-              <Layer {...(clusterLayer as LayerProps)} />
-              <Layer {...(clusterCountLayer as LayerProps)} />
-              <Layer {...(unclusteredPointLayer as LayerProps)} />
-              <Layer {...(unclusteredQualityLayer as LayerProps)} />
+              <Layer {...clusterLayer} />
+              <Layer {...clusterCountLayer} />
+              <Layer {...unclusteredPointLayer} />
+              <Layer {...unclusteredQualityLayer} />
             </Source>
           </div>
         )}
@@ -275,3 +165,5 @@ export const MapPage = () => {
     </div>
   )
 }
+
+export default MapPage
