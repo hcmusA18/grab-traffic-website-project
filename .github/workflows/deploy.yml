@@ -23,7 +23,9 @@ jobs:
             node-version: '20'
 
         - name: Install dependencies
-          uses: bahmutov/npm-install@v1
+          uses: bahmutov/npm-install@v1.6.0
+          with:
+            install-command: npm install
 
         - name: Check dependencies
           run: npm ls
