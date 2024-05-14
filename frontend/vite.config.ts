@@ -16,5 +16,6 @@ export default defineConfig({
       theme: path.resolve(__dirname, 'src/theme')
     }
   },
+  base: '/grab-traffic-website-project/frontend/',
   plugins: [react()]
 })
