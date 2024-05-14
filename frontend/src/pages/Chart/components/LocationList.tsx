@@ -1,5 +1,4 @@
 import { Pagination, Col, Row } from 'antd'
-import { RootState, useAppSelector } from 'libs/redux'
 import { useEffect, useState } from 'react'
 import { useMediaQuery } from 'react-responsive'
 import { LocationService } from 'services/LocationService'
@@ -10,7 +9,7 @@ interface LocationListProps {
 }
 
 export const LocationList = ({ locationId, onChangeLocation }: LocationListProps) => {
-  const { mapLocation } = useAppSelector((state: RootState) => state.data)
+  const API_URL = import.meta.env.VITE_API_BASE_URL
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const isTablet = useMediaQuery({ query: '(max-width: 1024px)' })
   const [itemsPerPage, setItemsPerPage] = useState<number>(4)
@@ -64,7 +63,7 @@ export const LocationList = ({ locationId, onChangeLocation }: LocationListProps
                   }
                 }}>
                 <img
-                  src={mapLocation.find((loc) => loc.id === item.id)?.request}
+                  src={API_URL + `/image/locationID=${item.id}`}
                   alt="camera"
                   className="h-2/3 w-full rounded-t-md object-cover"
                 />

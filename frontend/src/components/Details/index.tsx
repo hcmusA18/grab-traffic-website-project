@@ -48,7 +48,7 @@ export const Details: React.FC = () => {
   const { showDetails, district } = useAppSelector((state) => state.page)
   const [isLoading, setIsLoading] = useState(true)
   const [fontSize, setFontSize] = useState<FontSize>(FontSize.md)
-  const [trafficData, airData] = useAppSelector((state) => [state.data.currentTrafficData, state.data.currentAirData])
+  const { currentTrafficData: trafficData, currentAirData: airData } = useAppSelector((state) => state.data)
 
   const baseClass =
     'bg-white transition-[margin-right] ease-in-out duration-500 fixed md:static top-0 bottom-0 right-0 z-40 p-4 w-full sm:w-[526px] text-black'

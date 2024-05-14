@@ -6,18 +6,11 @@ import { Doughnut } from 'react-chartjs-2'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
-const useLocationImage = () => {
-  const locationID = useAppSelector((state) => state.data.currentLocationID)
-  const locations = useAppSelector((state) => state.data.mapLocation)
-  const urlImage = locations.find((location) => location.id === locationID)?.request
-
-  return urlImage
-}
-
 export const Traffic = () => {
+  const API_URL = import.meta.env.VITE_API_BASE_URL
+  const locationID = useAppSelector((state) => state.data.currentLocationID)
   const { currentTrafficData: trafficData } = useAppSelector((state) => state.data)
   const [isLoading, setIsLoading] = useState(true)
-  const urlImage = useLocationImage()
   const [data, setData] = useState<ChartData<'doughnut'>['datasets']>([])
   const [isImageLoading, setIsImageLoading] = useState(true)
   const labels = ['Car', 'Motorbike', 'Bus', 'Truck', 'Pedestrian', 'Bicycle']
@@ -58,10 +51,10 @@ export const Traffic = () => {
   return (
     <Spin spinning={isLoading} size="large" tip="Loading...">
       <div className="flex flex-col items-center space-y-4">
-        {urlImage && (
+        {locationID && (
           <div className="relative">
             <img
-              src={urlImage}
+              src={API_URL + `/image/locationID=${locationID}`}
               style={{ objectFit: 'cover' }}
               className="rounded-md"
               alt="camera"

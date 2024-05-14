@@ -25,7 +25,7 @@ export const TrafficRanking = () => {
   useEffect(() => {
     const fetchData = async () => {
       const rankingData = await rankingService.getCurrentRanking({ option: 'traffic' })
-      setData(rankingData.traffic_ranking || [])
+      setData(rankingData.traffic_ranking?.reverse() || [])
     }
 
     fetchData()

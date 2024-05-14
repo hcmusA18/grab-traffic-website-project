@@ -26,7 +26,7 @@ export const AirRanking = () => {
   useEffect(() => {
     const fetchData = async () => {
       const rankingData = await rankingService.getCurrentRanking({ option: 'air' })
-      setData(rankingData.air_ranking || [])
+      setData(rankingData.air_ranking?.reverse() || [])
     }
 
     fetchData()

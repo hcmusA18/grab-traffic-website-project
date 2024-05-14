@@ -35,7 +35,7 @@ export const useInitLocationData = () => {
 
 export const useInitEnvironData = () => {
   const dispatch = useAppDispatch()
-  const [currentLocationID] = useAppSelector((state) => [state.data.currentLocationID])
+  const { currentLocationID } = useAppSelector((state) => state.data)
   const environService = EnviroService.getInstance()
 
   useEffect(() => {
