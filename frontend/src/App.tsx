@@ -1,7 +1,7 @@
 import './App.css'
 import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
 import { useInitEnvironData, useInitLocationData } from 'libs/redux'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Spin } from 'antd'
 
 // Lazy load pages for better performance
@@ -27,6 +27,19 @@ const App: React.FC = () => {
       </Route>
     )
   )
+
+  useEffect(() => {
+    const resizeOps = () => {
+      const vh = window.innerHeight * 0.01
+      document.documentElement.style.setProperty('--vh', `${vh}px`)
+    }
+
+    resizeOps()
+    window.addEventListener('resize', resizeOps)
+    return () => {
+      window.removeEventListener('resize', resizeOps)
+    }
+  }, [])
 
   return (
     <React.Suspense fallback={<Spin fullscreen />}>

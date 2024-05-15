@@ -80,5 +80,7 @@
   }
   body {
     @apply m-0 h-full w-full bg-background p-0 text-foreground;
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
   }
 }
