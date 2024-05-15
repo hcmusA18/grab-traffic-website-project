@@ -5,7 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import './index.css'
 import { Spin } from 'antd'
 import { distance, point } from '@turf/turf'
-import { setCurrentLocationID } from 'libs/redux/sliceData'
+import { setCurrentAirData, setCurrentLocationID, setCurrentTrafficData } from 'libs/redux/sliceData'
 import { trafficLayer } from './components/layers'
 import { debounce } from 'lodash'
 
@@ -158,6 +158,8 @@ export const MapPage = () => {
                 zoomToDistrict(lng, lat)
                 dispatch(setShowDetails({ showDetails: true, district: location.place }))
                 dispatch(setCurrentLocationID(parseInt(locationID)))
+                dispatch(setCurrentAirData(undefined))
+                dispatch(setCurrentTrafficData(undefined))
               }}
               air_quality={location.air_quality as number}
               air_quality_index={location?.air_quality_index as number}
