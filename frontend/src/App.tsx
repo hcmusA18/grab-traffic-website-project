@@ -3,6 +3,7 @@ import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromE
 import { useInitEnvironData, useInitLocationData } from 'libs/redux'
 import React, { useEffect } from 'react'
 import { Spin } from 'antd'
+import 'flag-icons/css/flag-icons.min.css'
 
 // Lazy load pages for better performance
 const RootLayout = React.lazy(() => import('./pages/Layout'))

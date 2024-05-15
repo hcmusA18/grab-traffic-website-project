@@ -5,6 +5,8 @@ import './index.css'
 import { Provider } from 'react-redux'
 import { store } from 'libs/redux'
 
+import './i18n'
+
 const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [hasError, setHasError] = useState(false)
   const [error, setError] = useState<Error | null>(null)
