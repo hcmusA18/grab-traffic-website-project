@@ -18,5 +18,12 @@
   "change": "Change",
   "air_quality_ranking": "Air Quality Ranking",
   "traffic_ranking": "Traffic Ranking",
-  "average_traffic": "Average Traffic"
+  "average_traffic": "Average Traffic",
+  "change_ranking": "Change Ranking",
+  "car": "Car",
+  "motorbike": "Motorbike",
+  "bus": "Bus",
+  "truck": "Truck",
+  "pedestrian": "Pedestrian",
+  "bicycle": "Bicycle"
 }

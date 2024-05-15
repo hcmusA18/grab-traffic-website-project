@@ -14,10 +14,12 @@ export const Traffic = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<ChartData<'doughnut'>['datasets']>([])
   const [isImageLoading, setIsImageLoading] = useState(true)
-  const labels = ['Car', 'Motorbike', 'Bus', 'Truck', 'Pedestrian', 'Bicycle']
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const [labels, setLabels] = useState<string[]>([])
 
   useEffect(() => {
+    setLabels(['car', 'motorbike', 'bus', 'truck', 'pedestrian', 'bicycle'].map((label) => t(label)))
+
     if (trafficData) {
       const values = [
         trafficData.car,
@@ -38,7 +40,7 @@ export const Traffic = () => {
         }
       ])
     }
-  }, [trafficData])
+  }, [trafficData, i18n.language, t])
 
   useEffect(() => {
     if (trafficData) {
@@ -71,6 +73,7 @@ export const Traffic = () => {
         )}
         <div className="h-full w-full">
           <Doughnut
+            key={i18n.language}
             data={{ labels, datasets: data }}
             options={{
               responsive: true,

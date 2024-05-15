@@ -18,5 +18,12 @@
   "change": "Thay đổi",
   "air_quality_ranking": "Xếp hạng chất lượng không khí",
   "traffic_ranking": "Xếp hạng giao thông",
-  "average_traffic": "Giao thông trung bình"
+  "average_traffic": "Giao thông trung bình",
+  "change_ranking": "Xếp hạng thay đổi",
+  "car": "Xe hơi",
+  "motorbike": "Xe máy",
+  "bus": "Xe buýt",
+  "truck": "Xe tải",
+  "pedestrian": "Người đi bộ",
+  "bicycle": "Xe đạp"
 }
