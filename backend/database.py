@@ -1,7 +1,6 @@
 import requests
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from aqiCalculator import *
 import os
 import json
 from datetime import datetime

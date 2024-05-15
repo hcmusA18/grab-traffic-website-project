@@ -7,12 +7,9 @@ from flask_pymongo import PyMongo
 from datetime import datetime, timedelta
 from collections import Counter
 from database import *
-from aqiCalculator import *
+from calculator import *
 import math
-import base64
-# from trafficData import getData
 
-# set up app
 app = Flask(__name__)
 api = Api(app)
 cors = CORS(app)
@@ -23,7 +20,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 class hello(Resource):
   def get(self):
-    return {"Welcome": "Hello World"}
+    return {"Application": "[Application name]"}
 
 
 class location_all(Resource):
@@ -32,26 +29,7 @@ class location_all(Resource):
     for document in Place_LatLong_API.find({}, {"_id": 0, "id":1, "place":1, "lat":1, "long":1, "request":1, "traffic_data": {"$slice": -1}, "air_data":{"$slice": -1}}):
       traffic_data = document["traffic_data"][0]
       air_data = document["air_data"][0]["components"]
-      traffic_index = (traffic_data["person"]*0.25 + (traffic_data["bike"] + traffic_data["motorbike"])*0.5 + 
-                     traffic_data["car"]*1 + (traffic_data["truck"] + traffic_data["bus"])*2)
-      if (traffic_index < 2.5):
-        traffic_data["traffic_quality"] = 1
-      elif (traffic_index < 5):
-        traffic_data["traffic_quality"] = 2
-      elif (traffic_index < 7.5):
-        traffic_data["traffic_quality"] = 3
-      elif (traffic_index < 10):
-        traffic_data["traffic_quality"] = 4
-      else:
-        traffic_data["traffic_quality"] = 5
-      air_index = max(
-        calculate_aqi(air_data["co"] * 0.873 * 0.001, "co"), # Convert from miligram/m3 to ppm
-        calculate_aqi(air_data["no2"] * 0.531 * 1, "no2"), # Convert from miligram/m3 to ppb
-        calculate_aqi(air_data["so2"] * 0.382 * 1, "so2"), # Convert from miligram/m3 to ppb
-        calculate_aqi(air_data["o3"] * 0.509 * 0.001, "o3"), # Convert from miligram/m3 to ppm
-        calculate_aqi(air_data["pm2_5"], "pm2_5"), # Convert from miligram/m3 to ppm
-        calculate_aqi(air_data["pm10"], "pm10"), # Convert from miligram/m3 to ppm
-      )
+      traffic_index = calculate_traffic_index_from_dict(traffic_data)
       locations.append({
         "id": document["id"],
         "place": document["place"],
@@ -59,8 +37,8 @@ class location_all(Resource):
         "long": document["long"],
         "request": document["request"],
         "air_quality": document["air_data"][0]["aqp"],
-        "air_quality_index": air_index,
-        "traffic_quality": traffic_data["traffic_quality"],
+        "air_quality_index": calculate_aqi_from_dict(air_data),
+        "traffic_quality": traffic_index_to_quality(traffic_index),
         "traffic_quality_index": traffic_index
       })
     return {
@@ -72,33 +50,33 @@ class location_all(Resource):
 
 class location_name_search(Resource):
   def post(self):
-    name = request.form.get("keyword")
+    keyword = request.form.get("keyword")
+    keyword = to_lowercase_english(keyword)
     locations = []
     for document in Place_LatLong_API.find({}, {"traffic_data":0, "air_data":0, "_id": 0}):
-      if (name.lower() in document["place"].lower()):
+      if (keyword in to_lowercase_english(document["place"])):
         locations.append(document)
     return {
       "count": len(locations),
-      "keyword": name,
+      "keyword": keyword,
       "locations": locations
     }
 
 
 class location_name_autofill(Resource):
   def post(self):
-    name = request.form.get("keyword")
-    print(name)
+    keyword = request.form.get("keyword")
+    keyword = to_lowercase_english(keyword)
     locations = []
-    for document in Place_LatLong_API.find({}, {"traffic_data":0, "air_data":0, "_id": 0}):
-      if (name.lower() in document["place"].lower()):
+    for document in Place_LatLong_API.find({}, {"_id": 0, "id":1, "place": 1}):
+      if (keyword in to_lowercase_english(document["place"])):
         locations.append({
           "id": document["id"],
-          "place": document["place"]
+          "place": 1
         })
-        print(document["place"])
     return {
       "count": len(locations),
-      "keyword": name,
+      "keyword": keyword,
       "locations": locations
     }
   
@@ -106,17 +84,11 @@ class location_name_autofill(Resource):
 class location_nearby(Resource):
   def post(self):
     id = int(request.form.get("id"))
+    radius = int(try_read("radius", "3"))
+    number = int(try_read("number", "3"))
     center = Place_LatLong_API.find_one({"id":id}, {"traffic_data":0, "air_data":0, "_id": 0})
-    try:
-      radius = float(request.form.get("radius"))
-    except:
-      radius = 3
-    try:
-      number = int(request.form.get("number"))
-    except:
-      number = 3
     locations = []
-    for document in Place_LatLong_API.find({}, {"traffic_data":0, "air_data":0, "_id": 0}):
+    for document in Place_LatLong_API.find({}, {"_id": 0, "id":1, "place":1, "lat":1, "long":1}):
       distance = math.sqrt((float(document["lat"])-float(center["lat"]))**2 + (float(document["long"])-float(center["long"]))**2) * 111
       if ( distance < radius ) and (int(document["id"]) != id):
         locations.append({
@@ -127,14 +99,8 @@ class location_nearby(Resource):
     locations = sorted(locations, key=lambda d: d['distance'])[0:number]
     return {
       "count": len(locations),
-      "param": {
-        "radius": radius,
-        "number": number
-      },
-      "center": {
-        "id": id,
-        "place": center["place"]
-      },
+      "param": {"radius": radius, "number": number},
+      "center": {"id": id, "place": center["place"]},
       "locations": locations
     }
 
@@ -142,32 +108,16 @@ class location_nearby(Resource):
 class data_current(Resource):
   def get(self, id):
     location = Place_LatLong_API.find_one({"id": id}, {"id": 1, "lat": 1, "long":1, "place": 1, "request": 1, "traffic_data": {"$slice": -1}, "air_data":{"$slice": -1}})
+    # Get traffic data
     traffic_data = location["traffic_data"][0]
     traffic_data.pop("time")
-    traffic_data["traffic_quality_index"] = (traffic_data["person"]*0.25 + (traffic_data["bike"] + traffic_data["motorbike"])*0.5 + 
-                     traffic_data["car"]*1 + (traffic_data["truck"] + traffic_data["bus"])*2)
-    if (traffic_data["traffic_quality_index"] < 2.5):
-      traffic_data["traffic_quality"] = 1
-    elif (traffic_data["traffic_quality_index"] < 5):
-      traffic_data["traffic_quality"] = 2
-    elif (traffic_data["traffic_quality_index"] < 7.5):
-      traffic_data["traffic_quality"] = 3
-    elif (traffic_data["traffic_quality_index"] < 10):
-      traffic_data["traffic_quality"] = 4
-    else:
-      traffic_data["traffic_quality"] = 5
+    traffic_data["traffic_quality_index"] = calculate_traffic_index_from_dict(traffic_data)
+    traffic_data["traffic_quality"] = traffic_index_to_quality(traffic_data["traffic_quality_index"])
+    # Get air data
     air_data = location["air_data"][0]
     air_quality = air_data["aqp"]
-    air_data = air_data["components"]
     air_data["air_quality"] = air_quality
-    air_data["air_quality_index"] = max(
-      calculate_aqi(air_data["co"] * 0.873 * 0.001, "co"), # Convert from miligram/m3 to ppm
-      calculate_aqi(air_data["no2"] * 0.531 * 1, "no2"), # Convert from miligram/m3 to ppb
-      calculate_aqi(air_data["so2"] * 0.382 * 1, "so2"), # Convert from miligram/m3 to ppb
-      calculate_aqi(air_data["o3"] * 0.509 * 0.001, "o3"), # Convert from miligram/m3 to ppm
-      calculate_aqi(air_data["pm2_5"], "pm2_5"), # Convert from miligram/m3 to ppm
-      calculate_aqi(air_data["pm10"], "pm10"), # Convert from miligram/m3 to ppm
-    )
+    air_data["air_quality_index"] = calculate_aqi_from_dict(air_data["components"])
     return {
       "id": location["id"],
       "name": location["place"],
@@ -183,26 +133,24 @@ class data_current(Resource):
 class data_daily(Resource):
   def post(self):
     id = int(request.form.get("id"))
-    try:
-      today = datetime.strptime(request.form.get("date"), '%Y-%m-%d')
-    except:
-      today = datetime.today()
-    location = data_summary.find_one({"id": id}, {"id":1, "place":1, str(today.date()) : 1})
+    date_str = try_read("date", str(datetime.today().date()))
+    date = datetime.strptime(date_str, '%Y-%m-%d')
+    location = data_summary.find_one({"id": id}, {"id":1, "place":1, date_str: 1})
     data_hour = [
       {
         "hour": i,
-        "traffic_quality_index": location[str(today.date())]["traffic_summary"][i],
-        "air_quality_index": location[str(today.date())]["air_summary"][i]
+        "traffic_quality_index": location[date_str]["traffic_summary"][i],
+        "air_quality_index": location[date_str]["air_summary"][i]
       } for i in range(0, 24)
     ]
     future = future_summary.find_one({"id": id}, {"id": 1, "traffic_data": {"$slice": 1}, "air_data": {"$slice": 1}})
-    average_traffic = statistics.mean(location[str(today.date())]["traffic_summary"])
+    average_traffic = statistics.mean(location[date_str]["traffic_summary"])
     sum_future_traffic = future["traffic_data"][0]["car"] + future["traffic_data"][0]["bike"] + future["traffic_data"][0]["truck"] + future["traffic_data"][0]["bus"] + future["traffic_data"][0]["motorbike"]
-    average_air = statistics.mean(location[str(today.date())]["air_summary"])
+    average_air = statistics.mean(location[date_str]["air_summary"])
     return {
       "id": location["id"],
       "name": location["place"],
-      "date": str(today.date()),
+      "date": date_str,
       "data_hour": data_hour,
       "traffic": {
         "average": average_traffic,
@@ -517,7 +465,7 @@ class ranking_weekly(Resource):
           compared_traffic = statistics.mean(data_piece[str((today - timedelta(6)).date())]["air_summary"])
           for i in range(0, 7):
             avg_traffic += statistics.mean(data_piece[str((today - timedelta(6-i)).date())]["traffic_summary"]) / 7 
-          change = ((avg_air/compared_air) + (avg_traffic/compared_traffic) - 1) * (-100)
+          change = ((avg_air/compared_air) + (avg_traffic/compared_traffic) - 1) * (-100)/2
           change_ranking.append({
             "id": data_piece["id"],
             "name": data_piece["place"],
@@ -557,8 +505,8 @@ class ranking_weekly(Resource):
 
 
 class get_image(Resource):
-  def get(self):
-    url = request.form.get("url")
+  def get(self, id):
+    url = Place_LatLong_API.find_one({"id": id}, {"_id": 0, "request": 1})["request"]
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"}
     file = requests.get(url, headers=headers)
     # benc = base64.b64encode(file.content)
@@ -577,7 +525,7 @@ api.add_resource(data_range, "/data/range")
 api.add_resource(ranking_current, "/ranking/current")
 api.add_resource(ranking_daily, "/ranking/daily")
 api.add_resource(ranking_weekly, "/ranking/weekly")
-api.add_resource(get_image, "/getImage")
+api.add_resource(get_image, "/image/locationID=<int:id>")
 
 if __name__ == "__main__":
   app.run(debug=True, host="0.0.0.0", port=os.environ.get('LISTEN_PORT'))
