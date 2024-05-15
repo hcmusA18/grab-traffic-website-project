@@ -19,7 +19,7 @@ export const DragCloseDrawer: React.FC<DragCloseDrawerProps> = ({ children, open
     animate(scope.current, { opacity: [1, 0] })
     const yStart = typeof y.get() === 'number' ? y.get() : 0
 
-    await animate('#drawer', {
+    animate('#drawer', {
       y: [yStart, height]
     })
 
@@ -71,3 +71,5 @@ export const DragCloseDrawer: React.FC<DragCloseDrawerProps> = ({ children, open
     </>
   )
 }
+
+export default DragCloseDrawer

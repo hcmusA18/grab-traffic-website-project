@@ -8,14 +8,14 @@ export const AirQuality = () => {
   const getAirQualityColor = (airQuality: number) => {
     const colorScale = chroma
       .scale([colors.green, colors.yellow, colors.orange, colors.red, colors.purple, colors.dark])
-      .domain([0, 50, 100, 150, 200, 300, 500])
+      .domain([50, 100, 150, 200, 300, 500])
     return colorScale(airQuality).css()
   }
 
   return (
     <div
       className="flex flex-col rounded-t-md p-4 text-white"
-      style={{ backgroundColor: getAirQualityColor(airData?.air_quality || 0) }}>
+      style={{ backgroundColor: getAirQualityColor(airData?.air_quality as number) }}>
       <div className="flex items-end justify-center align-bottom">
         <h4 className="text-7xl font-semibold">
           {airData?.air_quality_index}
@@ -29,3 +29,5 @@ export const AirQuality = () => {
     </div>
   )
 }
+
+export default AirQuality
