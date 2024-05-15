@@ -12,6 +12,8 @@ const RankingPage = React.lazy(() => import('./pages/Ranking'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 const TestPage = React.lazy(() => import('./pages/TestPage'))
 
+import 'flag-icons/css/flag-icons.min.css'
+
 const App: React.FC = () => {
   useInitLocationData()
   useInitEnvironData()
