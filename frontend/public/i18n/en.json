@@ -4,5 +4,19 @@
   "ranking": "Ranking",
   "change_language": "Change Language",
   "language.en": "English",
-  "language.vi": "Tiếng Việt"
+  "language.vi": "Tiếng Việt",
+  "location": "Location",
+  "air_quality_percent_change": "Air Quality Percent Change",
+  "good_quality": "Good Quality",
+  "moderate_quality": "Moderate Quality",
+  "poor_quality": "Poor Quality",
+  "air_quality": "Air",
+  "traffic": "Traffic",
+  "loading...": "Loading...",
+  "related_locations": "Related Locations",
+  "enter_location": "Enter Location",
+  "change": "Change",
+  "air_quality_ranking": "Air Quality Ranking",
+  "traffic_ranking": "Traffic Ranking",
+  "average_traffic": "Average Traffic"
 }

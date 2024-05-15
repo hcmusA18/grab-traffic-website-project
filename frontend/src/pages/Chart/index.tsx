@@ -10,6 +10,7 @@ import type { RangeValue, CalendarChangeProps } from './components'
 import { LocationService } from 'services/LocationService'
 import { RootState, useAppSelector } from 'libs/redux'
 import { EnviroService } from 'services/EnviroService'
+import { useTranslation } from 'react-i18next'
 
 const fetchDailyData = async (location: string, date: string) => {
   const data = await EnviroService.getInstance().getDailyData({ id: location, date })
@@ -37,6 +38,7 @@ export const ChartPage = () => {
   const [trafficData, setTrafficData] = useState<TrafficData>()
   const [labels, setLabels] = useState<string[]>([])
   const [isFetching, setIsFetching] = useState<boolean>(false)
+  const { t } = useTranslation()
 
   const selectHandler = async (data: string) => {
     const value = await locationService.searchLocationByName({ keyword: data })
@@ -122,7 +124,7 @@ export const ChartPage = () => {
 
   return (
     <div className="container grid h-full w-full grid-cols-1 gap-4 py-2 md:grid-cols-12">
-      <Spin spinning={isFetching} fullscreen tip="Loading..." />
+      <Spin spinning={isFetching} fullscreen tip={t('loading...')} />
       {/* Input section */}
       <div className="col-span-full flex flex-col items-center justify-between gap-2 md:flex-row md:gap-0 md:space-x-4">
         <AutoComplete
@@ -131,7 +133,7 @@ export const ChartPage = () => {
           onChange={searchHandler}
           onSelect={selectHandler}
           defaultValue={options[0]?.value}
-          placeholder="Enter location"
+          placeholder={t('enter_location')}
         />
         <DateInput
           className="w-full"

@@ -13,6 +13,7 @@ import { Spin, Tabs, TabsProps, theme } from 'antd'
 import { useMediaQuery } from 'react-responsive'
 import StickyBox from 'react-sticky-box'
 import dayjs from 'libs/utils/dayjsConfig'
+import { useTranslation } from 'react-i18next'
 
 const AirQuality = lazy(() => import('./AirQuality'))
 const Weather = lazy(() => import('./Weather'))
@@ -51,6 +52,7 @@ export const Details: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [fontSize, setFontSize] = useState<FontSize>(FontSize.md)
   const { currentTrafficData: trafficData, currentAirData: airData } = useAppSelector((state) => state.data)
+  const { t } = useTranslation()
 
   const baseClass =
     'bg-white transition-[margin-right] ease-in-out duration-500 fixed md:static top-0 bottom-0 right-0 z-40 p-4 w-full sm:w-[526px] text-black'
@@ -69,10 +71,10 @@ export const Details: React.FC = () => {
   const tabsItems = [
     {
       key: 'airq',
-      label: 'Air Quality',
+      label: t('air_quality'),
       children: (
         <CustomTabPane key="airq">
-          <Spin spinning={isLoading} size="large" tip="Loading...">
+          <Spin spinning={isLoading} size="large" tip={t('loading...')}>
             <AirQuality />
             <Weather />
           </Spin>
@@ -81,7 +83,7 @@ export const Details: React.FC = () => {
     },
     {
       key: 'traffic',
-      label: 'Traffic',
+      label: t('traffic'),
       children: (
         <CustomTabPane key="traffic">
           <Traffic />

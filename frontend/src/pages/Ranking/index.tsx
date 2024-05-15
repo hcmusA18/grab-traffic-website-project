@@ -1,20 +1,22 @@
 import { useMediaQuery } from 'react-responsive'
 import { AirRanking, TrafficRanking, ChangeRanking } from './components'
 import { Tabs } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 export const RankingPage = () => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
+  const { t } = useTranslation()
   return (
     <div className="container box-border min-h-screen min-w-full px-3 py-4 md:px-4">
       {!isMobile ? (
         <Tabs defaultActiveKey="air" centered size="large">
-          <Tabs.TabPane tab="Air Quality" key="air">
+          <Tabs.TabPane tab={t('air_quality')} key="air">
             <AirRanking />
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Traffic" key="traffic">
+          <Tabs.TabPane tab={t('traffic')} key="traffic">
             <TrafficRanking />
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Change" key="change">
+          <Tabs.TabPane tab={t('change')} key="change">
             <ChangeRanking />
           </Tabs.TabPane>
         </Tabs>

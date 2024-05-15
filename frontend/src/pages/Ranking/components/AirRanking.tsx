@@ -2,26 +2,28 @@ import { RankingBoard } from './RankingBoard'
 import { useEffect, useState } from 'react'
 import { colors } from 'theme'
 import { RankingService } from 'services/RankingService'
-
-const rankingOptions = {
-  title: 'Air Quality Ranking',
-  columns: [
-    { title: 'Location', key: 'location' as keyof Ranking },
-    { title: 'PM2.5', key: 'value' as keyof Ranking }
-  ],
-  color: [
-    { range: [0, 50] as [number, number], color: colors.green },
-    { range: [51, 100] as [number, number], color: colors.yellow },
-    { range: [101, 150] as [number, number], color: colors.orange },
-    { range: [151, 200] as [number, number], color: colors.red },
-    { range: [201, 300] as [number, number], color: colors.purple },
-    { range: [301, 9999] as [number, number], color: colors.dark }
-  ]
-}
+import { useTranslation } from 'react-i18next'
 
 export const AirRanking = () => {
   const [data, setData] = useState<Ranking[]>([])
   const rankingService = RankingService.getInstance()
+  const { t } = useTranslation()
+
+  const rankingOptions = {
+    title: t('air_quality_ranking'),
+    columns: [
+      { title: 'Location', key: 'location' as keyof Ranking },
+      { title: 'PM2.5', key: 'value' as keyof Ranking }
+    ],
+    color: [
+      { range: [0, 50] as [number, number], color: colors.green },
+      { range: [51, 100] as [number, number], color: colors.yellow },
+      { range: [101, 150] as [number, number], color: colors.orange },
+      { range: [151, 200] as [number, number], color: colors.red },
+      { range: [201, 300] as [number, number], color: colors.purple },
+      { range: [301, 9999] as [number, number], color: colors.dark }
+    ]
+  }
 
   useEffect(() => {
     const fetchData = async () => {

@@ -19,6 +19,7 @@ import type { Dayjs } from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
 import { Spin } from 'antd'
 import { colors } from 'theme'
+import { useTranslation } from 'react-i18next'
 
 ChartJS.register(
   CategoryScale,
@@ -144,6 +145,8 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
   const [chartOptions, setChartOptions] = useState<ChartOptions<'bar'>>(defaultChartOptions)
   const [loading, setLoading] = useState(false)
   const chartRef = useRef(null)
+  const { t } = useTranslation()
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -217,7 +220,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
   }, [rawData, labels, location, startDate, endDate])
   return (
     <div className="h-[20rem] w-full rounded-md border border-gray-200 md:col-span-8 md:h-[32rem]">
-      <Spin spinning={loading} tip="Loading..." fullscreen />
+      <Spin spinning={loading} tip={t('loading...')} fullscreen />
       <Chart ref={chartRef} type="bar" data={chartData as ChartData<'bar'>} options={chartOptions} />
     </div>
   )

@@ -1,6 +1,9 @@
 import { useAppSelector } from 'libs/redux'
+import { useTranslation } from 'react-i18next'
 
 export const AirQuality = () => {
+  const { t } = useTranslation()
+
   const airData = useAppSelector((state) => state.data.currentAirData)
 
   const getAirQualityColor = (airQuality: number) => {
@@ -10,11 +13,11 @@ export const AirQuality = () => {
 
   const getAirQuality = (airQuality: number) => {
     if (airQuality >= 1 && airQuality < 3) {
-      return 'Good quality'
+      return t('good_quality')
     } else if (airQuality >= 3 && airQuality < 5) {
-      return 'Moderate quality'
+      return t('moderate_quality')
     } else if (airQuality >= 5) {
-      return 'Poor quality'
+      return t('poor_quality')
     }
   }
 

@@ -15,6 +15,9 @@ interface MenuItem {
   label: React.ReactNode
 }
 
+const languages = ['en', 'vi']
+const flagNames = ['us', 'vn']
+
 const CustomMenu: React.FC<{ mode: 'horizontal' | 'inline' }> = ({ mode }) => {
   const location = useLocation()
   const selectedKey = location.pathname.split('/')[1] ?? 'map'
@@ -59,9 +62,6 @@ const DesktopSidebar: React.FC = () => {
     i18n.changeLanguage(lng)
   }
 
-  const languages = ['en', 'vi']
-  const flagNames = ['us', 'vn']
-
   return (
     <div className="shadow-m sticky top-0 z-50 border-b border-gray-200 bg-white py-3">
       <div className="flex flex-row items-center justify-center px-1 py-0 sm:px-6">
@@ -74,23 +74,21 @@ const DesktopSidebar: React.FC = () => {
           <div className="w-full">
             <CustomMenu mode="horizontal" />
           </div>
-          <div className="w-full text-right">
-            <Select
-              defaultValue={i18n.language}
-              style={{ width: 140 }}
-              onChange={changeLanguage}
-              className="custom-select">
-              {languages.map((lang, index) => {
-                console.log(`Language: ${lang}, Index: ${index}`)
-                return (
-                  <Select.Option key={lang} value={lang}>
-                    <span className={`fi fi-${flagNames[index]}`} style={{ marginRight: 8 }}></span>
-                    {t(`language.${lang}`)}
-                  </Select.Option>
-                )
-              })}
-            </Select>
-          </div>
+          <Select
+            defaultValue={i18n.language}
+            style={{ width: 140 }}
+            onChange={changeLanguage}
+            className="custom-select">
+            {languages.map((lang, index) => {
+              console.log(`Language: ${lang}, Index: ${index}`)
+              return (
+                <Select.Option key={lang} value={lang}>
+                  <span className={`fi fi-${flagNames[index]}`} style={{ marginRight: 8 }}></span>
+                  {t(`language.${lang}`)}
+                </Select.Option>
+              )
+            })}
+          </Select>
         </div>
       </div>
     </div>
@@ -101,6 +99,11 @@ const MobileSidebar: React.FC = () => {
   const [visible, setVisible] = useState(false)
   const toggleDrawer = () => setVisible(!visible)
   const location = useLocation()
+  const { t, i18n } = useTranslation()
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng)
+  }
 
   useEffect(() => {
     setVisible(false)
@@ -120,7 +123,20 @@ const MobileSidebar: React.FC = () => {
         onClose={toggleDrawer}
         open={visible}
         style={{ zIndex: 1000, fontFamily: 'Lilita One, sans-serif' }}>
-        <CustomMenu mode="inline" />
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+          <CustomMenu mode="inline" />
+          <Select defaultValue={i18n.language} style={{ width: '100%' }} onChange={changeLanguage}>
+            {languages.map((lang, index) => {
+              console.log(`Language: ${lang}, Index: ${index}`)
+              return (
+                <Select.Option key={lang} value={lang} label={t(`language.${lang}`)}>
+                  <span className={`fi fi-${flagNames[index]}`} style={{ marginRight: 8 }}></span>
+                  {t(`language.${lang}`)}
+                </Select.Option>
+              )
+            })}
+          </Select>
+        </div>
       </Drawer>
     </div>
   )

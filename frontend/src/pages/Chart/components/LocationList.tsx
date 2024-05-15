@@ -1,5 +1,6 @@
 import { Pagination, Col, Row } from 'antd'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from 'react-responsive'
 import { LocationService } from 'services/LocationService'
 
@@ -16,6 +17,7 @@ export const LocationList = ({ locationId, onChangeLocation }: LocationListProps
   const [currentPage, setCurrentPage] = useState<number>(1)
   const locationService = LocationService.getInstance()
   const [data, setData] = useState<MapLocation[]>([])
+  const { t } = useTranslation()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,7 +39,7 @@ export const LocationList = ({ locationId, onChangeLocation }: LocationListProps
   return (
     <div className="col-span-full flex w-full flex-col items-center">
       <div className="flex w-full items-center justify-between">
-        <h2 className="text-sm font-bold uppercase md:text-lg ">Related Locations</h2>
+        <h2 className="text-sm font-bold uppercase md:text-lg ">{t('related_locations')}</h2>
         <Pagination
           responsive={true}
           defaultCurrent={1}

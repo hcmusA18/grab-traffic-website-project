@@ -8,6 +8,7 @@ import { distance, point } from '@turf/turf'
 import { setCurrentAirData, setCurrentLocationID, setCurrentTrafficData } from 'libs/redux/sliceData'
 import { trafficLayer } from './components/layers'
 import { debounce } from 'lodash'
+import { useTranslation } from 'react-i18next'
 
 const Details = lazy(() => import('components/Details'))
 const CustomMarker = lazy(() => import('./components/CustomMarker'))
@@ -24,6 +25,7 @@ export const MapPage = () => {
   const [center, setCenter] = useState<[number, number]>([106.692330564, 10.770496918])
   const [zoom, setZoom] = useState(16)
   const dispatch = useAppDispatch()
+  const { t } = useTranslation()
   useInitEnvironData()
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export const MapPage = () => {
 
   return (
     <div className="flex h-full w-full flex-1">
-      <Spin spinning={isLoading && isStyleLoaded} fullscreen size="large" tip="Loading..." />
+      <Spin spinning={isLoading && isStyleLoaded} fullscreen size="large" tip={t('loading...')} />
       <Map
         ref={mapRef}
         mapboxAccessToken={mapboxToken}

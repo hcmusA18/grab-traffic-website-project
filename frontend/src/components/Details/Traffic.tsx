@@ -3,6 +3,7 @@ import { useAppSelector } from 'libs/redux'
 import { useEffect, useState } from 'react'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartData } from 'chart.js'
 import { Doughnut } from 'react-chartjs-2'
+import { useTranslation } from 'react-i18next'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -14,6 +15,7 @@ export const Traffic = () => {
   const [data, setData] = useState<ChartData<'doughnut'>['datasets']>([])
   const [isImageLoading, setIsImageLoading] = useState(true)
   const labels = ['Car', 'Motorbike', 'Bus', 'Truck', 'Pedestrian', 'Bicycle']
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (trafficData) {
@@ -49,7 +51,7 @@ export const Traffic = () => {
   }
 
   return (
-    <Spin spinning={isLoading} size="large" tip="Loading...">
+    <Spin spinning={isLoading} size="large" tip={t('loading...')}>
       <div className="flex flex-col items-center space-y-4">
         {locationID !== -1 && (
           <div className="relative">
