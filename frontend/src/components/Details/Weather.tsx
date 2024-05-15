@@ -12,6 +12,7 @@ import {
 } from 'chart.js'
 import { Radar } from 'react-chartjs-2'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend)
 
@@ -19,6 +20,7 @@ export const Weather = () => {
   const weatherData = useAppSelector((state) => state.data.currentAirData)
   const [data, setData] = useState<ChartData<'radar'>['datasets']>([])
   const labels = ['NO', 'NO2', 'SO2', 'PM2.5', 'PM10', 'NH3']
+  const { t, i18n } = useTranslation()
 
   useEffect(() => {
     if (weatherData) {
@@ -32,7 +34,7 @@ export const Weather = () => {
       ] as number[]
       setData([
         {
-          label: 'Air Quality',
+          label: t('air_quality'),
           data: values,
           fill: true,
           backgroundColor: 'rgba(75,192,192,0.2)',
@@ -41,7 +43,7 @@ export const Weather = () => {
         }
       ])
     }
-  }, [weatherData])
+  }, [weatherData, t, i18n.language])
 
   return (
     <div className="flex flex-col rounded-b-md border-2 border-gray-200 p-4">
@@ -63,3 +65,5 @@ export const Weather = () => {
     </div>
   )
 }
+
+export default Weather

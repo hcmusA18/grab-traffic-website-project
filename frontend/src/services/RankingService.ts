@@ -3,7 +3,9 @@ import AxiosHttpService from './AxiosHttpService'
 export interface IRankingService {
   getCurrentRanking(request: RankingRequest): Promise<{ air_ranking?: Ranking[]; traffic_ranking?: Ranking[] }>
   getDailyRanking(request: RankingRequest): Promise<{ air_ranking?: Ranking[]; traffic_ranking?: Ranking[] }>
-  getWeeklyRanking(request: RankingRequest): Promise<{ air_ranking?: Ranking[]; traffic_ranking?: Ranking[] }>
+  getWeeklyRanking(
+    request: RankingRequest
+  ): Promise<{ air_ranking?: Ranking[]; traffic_ranking?: Ranking[]; change_ranking?: Ranking[] }>
 }
 
 export class RankingService implements IRankingService {
@@ -76,19 +78,24 @@ export class RankingService implements IRankingService {
     }
   }
 
-  async getWeeklyRanking(request: RankingRequest): Promise<{ air_ranking?: Ranking[]; traffic_ranking?: Ranking[] }> {
+  async getWeeklyRanking(
+    request: RankingRequest
+  ): Promise<{ air_ranking?: Ranking[]; traffic_ranking?: Ranking[]; change_ranking?: Ranking[] }> {
     try {
       const response = await this.axiosService.post<RankingResponse, RankingRequest>('/ranking/weekly', request)
 
       const rankings = {
         air_ranking: undefined as Ranking[] | undefined,
-        traffic_ranking: undefined as Ranking[] | undefined
+        traffic_ranking: undefined as Ranking[] | undefined,
+        change_ranking: undefined as Ranking[] | undefined
       }
 
       if (request.option === 'air') {
         rankings.air_ranking = this.mapRanking(response.ranking, 'ranking')
       } else if (request.option === 'traffic') {
         rankings.traffic_ranking = this.mapRanking(response.ranking, 'ranking')
+      } else if (request.option === 'change') {
+        rankings.change_ranking = this.mapRanking(response.ranking, 'change_index')
       } else {
         rankings.air_ranking = this.mapRanking(response.air_ranking, 'air_quality_index')
         rankings.traffic_ranking = this.mapRanking(response.traffic_ranking, 'traffic_quality_index')

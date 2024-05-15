@@ -19,6 +19,7 @@ interface DateInputProps {
   defaultPickerDate?: [Dayjs, Dayjs]
   defaultDate?: Dayjs
 }
+const minDate = dayjs('2024-05-05')
 
 export const DateInput: React.FC<DateInputProps> = ({
   className,
@@ -32,6 +33,7 @@ export const DateInput: React.FC<DateInputProps> = ({
     <RangePicker
       className={className ?? ''}
       format={dateFormat}
+      minDate={minDate}
       onCalendarChange={onChange}
       disabledDate={disableDate}
       defaultValue={defaultPickerDate}
@@ -41,6 +43,7 @@ export const DateInput: React.FC<DateInputProps> = ({
     <DatePicker
       className={className ?? ''}
       format={dateFormat}
+      minDate={minDate}
       onCalendarChange={onChange}
       disabledDate={disableDate}
       defaultValue={defaultDate}

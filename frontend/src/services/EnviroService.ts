@@ -2,8 +2,12 @@ import AxiosHttpService from './AxiosHttpService'
 
 export interface IEnviroService {
   getCurrentData(request: TrafficAirDataRequest): Promise<TrafficAirData>
-  getDailyData(request: TrafficAirDataRequest): Promise<TrafficAirData[]>
-  getWeeklyData(request: TrafficAirDataRequest): Promise<TrafficAirData[]>
+  getDailyData(
+    request: TrafficAirDataRequest
+  ): Promise<{ chartData: TrafficAirData[]; traffic: TrafficData; air: AirData }>
+  getWeeklyData(
+    request: TrafficAirDataRequest
+  ): Promise<{ chartData: TrafficAirData[]; traffic: TrafficData; air: AirData }>
 }
 
 export class EnviroService implements IEnviroService {
@@ -31,7 +35,9 @@ export class EnviroService implements IEnviroService {
     }
   }
 
-  async getDailyData(request: TrafficAirDataRequest): Promise<TrafficAirData[]> {
+  async getDailyData(
+    request: TrafficAirDataRequest
+  ): Promise<{ chartData: TrafficAirData[]; traffic: TrafficData; air: AirData }> {
     try {
       const response = await this.axiosService.post<TrafficAirDataResponse, TrafficAirDataRequest>(
         '/data/daily',
@@ -51,50 +57,77 @@ export class EnviroService implements IEnviroService {
           }
         })
         .filter(Boolean) as TrafficAirData[]
-      return finalData
+      return {
+        chartData: finalData,
+        traffic: response.traffic as TrafficData,
+        air: response.average_air as AirData
+      }
     } catch (error) {
       console.error('Error fetching traffic and air data daily:', error)
       throw error
     }
   }
 
-  async getWeeklyData(request: TrafficAirDataRequest): Promise<TrafficAirData[]> {
+  async getWeeklyData(
+    request: TrafficAirDataRequest
+  ): Promise<{ chartData: TrafficAirData[]; traffic: TrafficData; air: AirData }> {
     try {
       const response = await this.axiosService.post<TrafficAirDataResponse, TrafficAirDataRequest>(
         '/data/weekly',
         request
       )
-      const finalData: TrafficAirData[] = response.traffic_data_day
-        ?.map((trafficData: TrafficData, index: number) => {
-          const airData = response.air_data_day?.[index]
-          if (airData) {
-            return {
-              air_data: airData,
-              traffic_data: trafficData
+      const finalData: TrafficAirData[] = response.data_day
+        ?.map((data: QualityIndex) => {
+          return {
+            air_data: {
+              air_quality_index: data.air_quality_index,
+              day: data.day
+            },
+            traffic_data: {
+              traffic_quality_index: data.traffic_quality_index,
+              day: data.day
             }
           }
         })
         .filter(Boolean) as TrafficAirData[]
-      return finalData
+      return {
+        chartData: finalData,
+        traffic: response.traffic as TrafficData,
+        air: response.average_air as AirData
+      }
     } catch (error) {
       console.error('Error fetching traffic and air data daily:', error)
       throw error
     }
   }
 
-  async getRangeData(request: TrafficAirDataRequest): Promise<TrafficAirData[]> {
-    const { id, startDate, endDate } = request
+  async getRangeData(
+    request: TrafficAirDataRequest
+  ): Promise<{ chartData: TrafficAirData[]; traffic: TrafficData; air: AirData }> {
     try {
-      const dayDiff = new Date(endDate as string).getDate() - new Date(startDate as string).getDate()
-      const requestList = Array.from({ length: dayDiff + 1 }, (_, i) => {
-        const date = new Date(startDate as string)
-        date.setDate(date.getDate() + i)
-        return this.getDailyData({ id, date: date.toISOString().split('T')[0] })
-      })
-      const response = await Promise.all(requestList)
-      return response.flat()
+      const response = await this.axiosService.post<TrafficAirDataResponse, TrafficAirDataRequest>(
+        '/data/range',
+        request
+      )
+      const finalData: TrafficAirData[] = response.data_day?.map((data: QualityIndex) => {
+        return {
+          air_data: {
+            air_quality_index: data.air_quality_index,
+            day: data.day
+          },
+          traffic_data: {
+            traffic_quality_index: data.traffic_quality_index,
+            day: data.day
+          }
+        }
+      }) as TrafficAirData[]
+      return {
+        chartData: finalData,
+        traffic: response.traffic as TrafficData,
+        air: response.average_air as AirData
+      }
     } catch (error) {
-      console.error('Error fetching RANGE traffic and air data:', error)
+      console.error('Error fetching traffic and air data daily:', error)
       throw error
     }
   }

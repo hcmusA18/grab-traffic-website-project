@@ -12,5 +12,9 @@ export const colors = {
   orange200: '#FFAB91',
   red200: '#FF8A80',
   purple200: '#B39DDB',
-  dark200: '#9575CD'
+  dark200: '#9575CD',
+  trafficLow: '#99ff99',
+  trafficModerate: '#ffcc99',
+  trafficHeavy: '#ff6666',
+  trafficServe: '#990000'
 }

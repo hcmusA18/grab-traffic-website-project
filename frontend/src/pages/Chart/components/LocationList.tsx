@@ -1,6 +1,6 @@
 import { Pagination, Col, Row } from 'antd'
-import { RootState, useAppSelector } from 'libs/redux'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from 'react-responsive'
 import { LocationService } from 'services/LocationService'
 
@@ -10,13 +10,14 @@ interface LocationListProps {
 }
 
 export const LocationList = ({ locationId, onChangeLocation }: LocationListProps) => {
-  const { mapLocation } = useAppSelector((state: RootState) => state.data)
+  const API_URL = import.meta.env.VITE_API_BASE_URL
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' })
   const isTablet = useMediaQuery({ query: '(max-width: 1024px)' })
   const [itemsPerPage, setItemsPerPage] = useState<number>(4)
   const [currentPage, setCurrentPage] = useState<number>(1)
   const locationService = LocationService.getInstance()
   const [data, setData] = useState<MapLocation[]>([])
+  const { t } = useTranslation()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +39,7 @@ export const LocationList = ({ locationId, onChangeLocation }: LocationListProps
   return (
     <div className="col-span-full flex w-full flex-col items-center">
       <div className="flex w-full items-center justify-between">
-        <h2 className="text-sm font-bold uppercase md:text-lg ">Related Locations</h2>
+        <h2 className="text-sm font-bold uppercase md:text-lg ">{t('related_locations')}</h2>
         <Pagination
           responsive={true}
           defaultCurrent={1}
@@ -64,7 +65,7 @@ export const LocationList = ({ locationId, onChangeLocation }: LocationListProps
                   }
                 }}>
                 <img
-                  src={mapLocation.find((loc) => loc.id === item.id)?.request}
+                  src={API_URL + `/image/locationID=${item.id}`}
                   alt="camera"
                   className="h-2/3 w-full rounded-t-md object-cover"
                 />

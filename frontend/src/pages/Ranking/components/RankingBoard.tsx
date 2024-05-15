@@ -57,9 +57,11 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
     },
     responsive: true,
     scales: {
-      y: {
-        beginAtZero: true,
-        suggestedMax: Math.max(...ranking.map((rank) => Number(rank[options.columns[1].key]))) * 1.3
+      x: {
+        suggestedMax: Math.max(...ranking.map((rank) => Number(rank[options.columns[1].key]))) * 1.1,
+        ticks: {
+          stepSize: 5
+        }
       }
     },
     maintainAspectRatio: false,
@@ -75,9 +77,18 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
       tooltip: {
         callbacks: {
           label: (context: TooltipItem<'bar'>) => {
-            const label = context.dataset.label ?? ''
-            if (context.parsed.y !== null) {
-              label.concat(`: ${context.parsed.y}`)
+            let label = context.dataset.label ?? ''
+            let unit = ''
+            if (label === 'PM2.5') {
+              unit = 'µg/m³'
+            } else if (label.toLowerCase().includes('traffic')) {
+              unit = 'vehicles/hour'
+            } else if (label.toLowerCase().includes('change')) {
+              label = 'Change Percent'
+              unit = '%'
+            }
+            if (context.raw) {
+              return `${label}: ${context.raw}${unit}`
             }
             return label
           }

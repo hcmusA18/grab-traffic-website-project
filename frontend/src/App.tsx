@@ -1,9 +1,19 @@
 import './App.css'
 import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
-import { MapPage, ChartPage, RankingPage, RootLayout, NotFound, TestPage } from './pages'
 import { useInitEnvironData, useInitLocationData } from 'libs/redux'
+import React, { useEffect } from 'react'
+import { Spin } from 'antd'
+import 'flag-icons/css/flag-icons.min.css'
 
-const App = () => {
+// Lazy load pages for better performance
+const RootLayout = React.lazy(() => import('./pages/Layout'))
+const MapPage = React.lazy(() => import('./pages/Map'))
+const ChartPage = React.lazy(() => import('./pages/Chart'))
+const RankingPage = React.lazy(() => import('./pages/Ranking'))
+const NotFound = React.lazy(() => import('./pages/NotFound'))
+const TestPage = React.lazy(() => import('./pages/TestPage'))
+
+const App: React.FC = () => {
   useInitLocationData()
   useInitEnvironData()
   const router = createBrowserRouter(
@@ -19,7 +29,24 @@ const App = () => {
     )
   )
 
-  return <RouterProvider router={router} />
+  useEffect(() => {
+    const resizeOps = () => {
+      const vh = window.innerHeight * 0.01
+      document.documentElement.style.setProperty('--vh', `${vh}px`)
+    }
+
+    resizeOps()
+    window.addEventListener('resize', resizeOps)
+    return () => {
+      window.removeEventListener('resize', resizeOps)
+    }
+  }, [])
+
+  return (
+    <React.Suspense fallback={<Spin fullscreen />}>
+      <RouterProvider router={router} />
+    </React.Suspense>
+  )
 }
 
 export default App
