@@ -44,3 +44,5 @@ export const AirRanking = () => {
     </div>
   )
 }
+
+export default AirRanking

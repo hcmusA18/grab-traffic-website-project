@@ -1,7 +1,10 @@
 import { useMediaQuery } from 'react-responsive'
-import { AirRanking, TrafficRanking, ChangeRanking } from './components'
+const AirRanking = lazy(() => import('./components/AirRanking'))
+const TrafficRanking = lazy(() => import('./components/TrafficRanking'))
+const ChangeRanking = lazy(() => import('./components/ChangeRanking'))
 import { Tabs } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { lazy } from 'react'
 
 export const RankingPage = () => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' })

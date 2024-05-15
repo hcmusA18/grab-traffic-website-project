@@ -1,8 +1,12 @@
 import { AutoComplete, Segmented, Spin } from 'antd'
 import { Dayjs } from 'dayjs'
 import dayjs from 'libs/utils/dayjsConfig'
-import { useCallback, useEffect, useState } from 'react'
-import { CombineChart, DateInput, LocationList, StatisticPane } from './components'
+import { lazy, useCallback, useEffect, useState } from 'react'
+const CombineChart = lazy(() => import('./components/CombineChart'))
+const DateInput = lazy(() => import('./components/DateInput'))
+const LocationList = lazy(() => import('./components/LocationList'))
+const StatisticPane = lazy(() => import('./components/StatisticPane'))
+
 import { debounce } from 'lodash'
 
 import type { DatePickerProps } from 'antd'

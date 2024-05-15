@@ -1,5 +1,5 @@
-/* eslint-disable no-console */
 import { Statistic, StatisticProps } from 'antd'
+import { CustomImage } from 'components/CustomImage'
 import CountUp from 'react-countup'
 import { useTranslation } from 'react-i18next'
 
@@ -20,14 +20,23 @@ interface StatisticPaneProps {
 export const StatisticPane = ({ className, location, traffic }: StatisticPaneProps) => {
   const API_URL = import.meta.env.VITE_API_BASE_URL
   const { t } = useTranslation()
-  console.log('Statistic Pane: ', traffic)
 
   return (
     <div className={className ?? ''}>
-      <img
+      {/* <div className="h-48 flex w-full items-center justify-center rounded-md">
+        {isImageLoading && <Skeleton.Image active /> }
+        <img
+          src={`${API_URL}/image/locationID=${location}`}
+          alt="location"
+          className={`h-full w-full rounded-md object-cover ${isImageLoading ? 'hidden' : ''}`}
+          onLoad={() => setIsImageLoading(false)}
+        />
+      </div> */}
+      <CustomImage
         src={`${API_URL}/image/locationID=${location}`}
         alt="location"
-        className="h-48 w-full rounded-md object-cover"
+        containerClassName="h-48 w-full rounded-md flex items-center justify-center"
+        className="h-full w-full rounded-md object-cover"
       />
       {/* <div className="flex w-full items-center justify-between">
         <span className="font-medium md:text-lg">Rush hours</span>
@@ -43,3 +52,5 @@ export const StatisticPane = ({ className, location, traffic }: StatisticPanePro
     </div>
   )
 }
+
+export default StatisticPane

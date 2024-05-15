@@ -51,3 +51,5 @@ export const DateInput: React.FC<DateInputProps> = ({
     />
   )
 }
+
+export default DateInput

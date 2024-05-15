@@ -13,10 +13,10 @@ import {
   ChartOptions,
   ChartData
 } from 'chart.js'
-import { Chart } from 'react-chartjs-2'
+const Chart = lazy(() => import('react-chartjs-2').then((module) => ({ default: module.Chart })))
 import { faker } from '@faker-js/faker'
 import type { Dayjs } from 'dayjs'
-import { useEffect, useRef, useState } from 'react'
+import { lazy, useEffect, useRef, useState } from 'react'
 import { Spin } from 'antd'
 import colors from 'tailwindcss/colors'
 import { useTranslation } from 'react-i18next'
@@ -244,3 +244,5 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
     </div>
   )
 }
+
+export default CombineChart

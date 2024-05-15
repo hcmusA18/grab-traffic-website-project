@@ -44,3 +44,5 @@ export const TrafficRanking = () => {
     </div>
   )
 }
+
+export default TrafficRanking

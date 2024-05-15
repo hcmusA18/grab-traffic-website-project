@@ -5,6 +5,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartData } from 'chart.
 import { Doughnut } from 'react-chartjs-2'
 import { useTranslation } from 'react-i18next'
 import colors from 'tailwindcss/colors'
+import { CustomImage } from 'components/CustomImage'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -14,7 +15,6 @@ export const Traffic = () => {
   const { currentTrafficData: trafficData } = useAppSelector((state) => state.data)
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<ChartData<'doughnut'>['datasets']>([])
-  const [, setIsImageLoading] = useState(true)
   const { t, i18n } = useTranslation()
   const [labels, setLabels] = useState<string[]>([])
 
@@ -56,20 +56,15 @@ export const Traffic = () => {
     }
   }, [trafficData])
 
-  const handleImageLoad = () => {
-    setIsImageLoading(false)
-  }
-
   return (
     <Spin spinning={isLoading} size="large" tip={t('loading...')}>
       <div className="flex flex-col items-center space-y-4">
         {locationID !== -1 && (
-          <img
+          <CustomImage
             src={API_URL + `/image/locationID=${locationID}`}
-            style={{ objectFit: 'cover' }}
-            className="rounded-md"
             alt="camera"
-            onLoad={handleImageLoad}
+            containerClassName="h-42 w-full rounded-md flex items-center justify-center"
+            className="rounded-md"
           />
         )}
         <div className="h-full w-full">

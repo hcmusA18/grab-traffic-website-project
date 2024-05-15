@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React, { useEffect, useState } from 'react'
 import { Button, Drawer, Menu, Select } from 'antd'
 import { Link, useLocation } from 'react-router-dom'
@@ -66,7 +65,7 @@ const DesktopSidebar: React.FC = () => {
     <div className="shadow-m sticky top-0 z-50 border-b border-gray-200 bg-white py-3">
       <div className="flex flex-row items-center justify-center px-1 py-0 sm:px-6">
         <div className="float-left w-32">
-          <h3 className="inline-block text-lg capitalize" style={{ fontFamily: 'Racing Sans One, sans-serif' }}>
+          <h3 className="inline-block text-2xl capitalize" style={{ fontFamily: 'Racing Sans One, sans-serif' }}>
             Traffiker
           </h3>
         </div>
@@ -80,7 +79,6 @@ const DesktopSidebar: React.FC = () => {
             onChange={changeLanguage}
             className="custom-select">
             {languages.map((lang, index) => {
-              console.log(`Language: ${lang}, Index: ${index}`)
               return (
                 <Select.Option key={lang} value={lang}>
                   <span className={`fi fi-${flagNames[index]}`} style={{ marginRight: 8 }}></span>
@@ -127,7 +125,6 @@ const MobileSidebar: React.FC = () => {
           <CustomMenu mode="inline" />
           <Select defaultValue={i18n.language} style={{ width: '100%' }} onChange={changeLanguage}>
             {languages.map((lang, index) => {
-              console.log(`Language: ${lang}, Index: ${index}`)
               return (
                 <Select.Option key={lang} value={lang} label={t(`language.${lang}`)}>
                   <span className={`fi fi-${flagNames[index]}`} style={{ marginRight: 8 }}></span>

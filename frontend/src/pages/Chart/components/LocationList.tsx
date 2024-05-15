@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from 'react-responsive'
 import { LocationService } from 'services/LocationService'
+import { CustomImage } from 'components/CustomImage'
 
 interface LocationListProps {
   locationId: string
@@ -64,10 +65,11 @@ export const LocationList = ({ locationId, onChangeLocation }: LocationListProps
                     onChangeLocation(item.id.toString())
                   }
                 }}>
-                <img
+                <CustomImage
                   src={API_URL + `/image/locationID=${item.id}`}
                   alt="camera"
-                  className="h-2/3 w-full rounded-t-md object-cover"
+                  className=" w-full rounded-t-md object-cover"
+                  containerClassName="w-full h-52 flex items-center justify-center"
                 />
                 <div className="p-4">
                   <h3 className="leading-2 line-clamp-1 text-lg font-bold">{item.place}</h3>
@@ -80,3 +82,5 @@ export const LocationList = ({ locationId, onChangeLocation }: LocationListProps
     </div>
   )
 }
+
+export default LocationList

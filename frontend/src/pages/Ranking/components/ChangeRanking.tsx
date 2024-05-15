@@ -41,3 +41,5 @@ export const ChangeRanking = () => {
     </div>
   )
 }
+
+export default ChangeRanking
