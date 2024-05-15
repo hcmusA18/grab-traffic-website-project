@@ -84,16 +84,6 @@ export const MapPage = () => {
   useEffect(() => {
     if (mapRef.current) {
       const map = mapRef.current.getMap()
-      map.on('style.load', () => {
-        setIsStyleLoaded(true)
-      })
-      map.on('style.error', () => {
-        setIsStyleLoaded(false)
-      })
-
-      map.on('styledata', () => {
-        setIsStyleLoaded(true)
-      })
       map.on('zoomend', () => {
         if (map.getZoom() !== zoom) {
           setZoom(map.getZoom())
@@ -108,7 +98,7 @@ export const MapPage = () => {
 
   return (
     <div className="flex h-full w-full flex-1">
-      <Spin spinning={isLoading && !isStyleLoaded} fullscreen size="large" tip={t('loading...')} />
+      <Spin spinning={isLoading && isStyleLoaded} fullscreen size="large" tip={t('loading...')} />
       <Map
         ref={mapRef}
         mapboxAccessToken={mapboxToken}
@@ -139,11 +129,12 @@ export const MapPage = () => {
             setZoom(e.viewState.zoom)
           }
         }}
+        onStyleData={(_) => setIsStyleLoaded(true)}
         attributionControl={false}>
         <div>
           <MapControls />
 
-          {!isStyleLoaded && hasData && (
+          {isStyleLoaded && hasData && (
             <Source id="traffic" type="vector" url="mapbox://mapbox.mapbox-traffic-v1">
               <Layer {...trafficLayer} />
             </Source>
