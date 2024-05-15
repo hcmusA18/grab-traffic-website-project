@@ -16,6 +16,7 @@ import {
 import ChartDataLabels from 'chartjs-plugin-datalabels'
 import { Bar } from 'react-chartjs-2'
 import { getColorForValue } from 'libs/utils/helper'
+import colors from 'tailwindcss/colors'
 
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement, BarElement, LineElement)
 
@@ -99,7 +100,7 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
         align: 'start',
         anchor: 'end',
         offset: 4,
-        color: '#f9f9f9',
+        color: colors.gray[900],
         font: {
           weight: 'bold'
         },

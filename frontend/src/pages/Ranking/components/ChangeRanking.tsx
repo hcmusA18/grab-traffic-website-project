@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { RankingBoard } from './RankingBoard'
-import { colors } from 'theme/colors'
 import { RankingService } from 'services/RankingService'
 import { useTranslation } from 'react-i18next'
+import colors from 'tailwindcss/colors'
 
 export const ChangeRanking = () => {
   const [data, setData] = useState<Ranking[]>([])
@@ -16,12 +16,10 @@ export const ChangeRanking = () => {
       { title: t('air_quality_percent_change'), key: 'value' as keyof Ranking }
     ],
     color: [
-      { range: [0, 8] as [number, number], color: colors.green },
-      { range: [9, 14] as [number, number], color: colors.yellow },
-      { range: [15, 27] as [number, number], color: colors.orange },
-      { range: [28, 34] as [number, number], color: colors.red },
-      { range: [35, 47] as [number, number], color: colors.purple },
-      { range: [48, 9999] as [number, number], color: colors.dark }
+      { range: [-9999, 0] as [number, number], color: colors.green[500] },
+      { range: [0, 2] as [number, number], color: colors.yellow[500] },
+      { range: [2, 4] as [number, number], color: colors.orange[500] },
+      { range: [4, 9999] as [number, number], color: colors.red[500] }
     ]
   }
 
