@@ -7,7 +7,7 @@ import { FaHome, FaChartBar } from 'react-icons/fa'
 import { useMediaQuery } from 'react-responsive'
 import { FaRankingStar } from 'react-icons/fa6'
 import { useTranslation } from 'react-i18next'
-import 'flag-icons/css/flag-icons.min.css'
+import './index.css'
 
 interface MenuItem {
   key: string
@@ -75,12 +75,16 @@ const DesktopSidebar: React.FC = () => {
             <CustomMenu mode="horizontal" />
           </div>
           <div className="w-full text-right">
-            <Select defaultValue={i18n.language} style={{ width: 120 }} onChange={changeLanguage}>
+            <Select
+              defaultValue={i18n.language}
+              style={{ width: 140 }}
+              onChange={changeLanguage}
+              className="custom-select">
               {languages.map((lang, index) => {
                 console.log(`Language: ${lang}, Index: ${index}`)
                 return (
                   <Select.Option key={lang} value={lang}>
-                    <span className={`flag-icon flag-icon-${flagNames[index]}`} style={{ marginRight: 8 }}></span>
+                    <span className={`fi fi-${flagNames[index]}`} style={{ marginRight: 8 }}></span>
                     {t(`language.${lang}`)}
                   </Select.Option>
                 )

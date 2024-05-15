@@ -3,6 +3,7 @@ import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromE
 import { useInitEnvironData, useInitLocationData } from 'libs/redux'
 import React from 'react'
 import { Spin } from 'antd'
+import 'flag-icons/css/flag-icons.min.css'
 
 // Lazy load pages for better performance
 const RootLayout = React.lazy(() => import('./pages/Layout'))
@@ -11,8 +12,6 @@ const ChartPage = React.lazy(() => import('./pages/Chart'))
 const RankingPage = React.lazy(() => import('./pages/Ranking'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 const TestPage = React.lazy(() => import('./pages/TestPage'))
-
-import 'flag-icons/css/flag-icons.min.css'
 
 const App: React.FC = () => {
   useInitLocationData()
