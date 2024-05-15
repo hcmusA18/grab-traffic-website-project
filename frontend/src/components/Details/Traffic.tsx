@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartData } from 'chart.js'
 import { Doughnut } from 'react-chartjs-2'
 import { useTranslation } from 'react-i18next'
+import colors from 'tailwindcss/colors'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -33,7 +34,14 @@ export const Traffic = () => {
         {
           label: 'Number: ',
           data: values,
-          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#33FF57', '#33FFC7'],
+          backgroundColor: [
+            colors.rose[400],
+            colors.blue[400],
+            colors.yellow[400],
+            colors.orange[400],
+            colors.green[400],
+            colors.cyan[400]
+          ],
           borderColor: 'rgba(55,100,100,0.2)',
           borderWidth: 1,
           hoverOffset: 4
