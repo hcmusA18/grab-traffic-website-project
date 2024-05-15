@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { useAppDispatch, useAppSelector } from 'libs/redux'
+import React, { lazy, useEffect, useState } from 'react'
 import {
+  useAppDispatch,
+  useAppSelector,
   setShowDetails,
   setCurrentAirData,
   setCurrentTrafficData,
@@ -9,13 +10,14 @@ import {
 } from 'libs/redux'
 import { FaChevronRight } from 'react-icons/fa'
 import { Spin, Tabs, TabsProps, theme } from 'antd'
+import { useMediaQuery } from 'react-responsive'
 import StickyBox from 'react-sticky-box'
 import dayjs from 'libs/utils/dayjsConfig'
-import { AirQuality } from './AirQuality'
-import { Weather } from './Weather'
-import { Traffic } from './Traffic'
-import { useMediaQuery } from 'react-responsive'
-import { DragCloseDrawer } from './DragCloseDrawer'
+
+const AirQuality = lazy(() => import('./AirQuality'))
+const Weather = lazy(() => import('./Weather'))
+const Traffic = lazy(() => import('./Traffic'))
+const DragCloseDrawer = lazy(() => import('./DragCloseDrawer'))
 
 const CustomTabPane: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <div className="flex flex-col gap-4 pt-4">{children}</div>
@@ -139,3 +141,5 @@ export const Details: React.FC = () => {
     </DragCloseDrawer>
   )
 }
+
+export default Details

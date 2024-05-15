@@ -6,6 +6,7 @@ type MapLocation = {
   request?: string
   distance?: number
   air_quality?: number
+  air_quality_index?: number
   traffic_quality?: number
 }
 

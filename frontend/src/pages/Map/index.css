@@ -9,13 +9,12 @@
 .pulsing-dot {
   width: 120px;
   height: 40px;
-  background-color: #ff4081;
+  /* background-color: #ff4081; */
   border-radius: 50%;
   opacity: 0;
   pointer-events: none;
   transform: scale(1);
   animation: pulse 2s infinite;
-  margin-left: 4px;
   display: block;
   cursor: 'pointer';
 }

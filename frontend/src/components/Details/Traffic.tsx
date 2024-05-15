@@ -51,7 +51,7 @@ export const Traffic = () => {
   return (
     <Spin spinning={isLoading} size="large" tip="Loading...">
       <div className="flex flex-col items-center space-y-4">
-        {locationID && (
+        {locationID !== -1 && (
           <div className="relative">
             <img
               src={API_URL + `/image/locationID=${locationID}`}
@@ -94,3 +94,5 @@ export const Traffic = () => {
     </Spin>
   )
 }
+
+export default Traffic

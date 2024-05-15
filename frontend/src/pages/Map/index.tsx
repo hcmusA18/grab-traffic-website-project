@@ -1,31 +1,28 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, useRef, useEffect, useMemo } from 'react'
-import { Map, MapRef, Source, Layer, MapLayerMouseEvent, Marker } from 'react-map-gl'
-import { FeatureCollection, Point } from 'geojson'
+import { useState, useRef, useEffect, useCallback, lazy, useMemo } from 'react'
+import { Map, MapRef, Source, Layer } from 'react-map-gl'
 import { useAppDispatch, setShowDetails, useAppSelector, useInitEnvironData } from 'libs/redux'
-import { Details } from 'components/Details'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import './index.css'
-import reactIcon from 'assets/react.svg'
 import { Spin } from 'antd'
 import { distance, point } from '@turf/turf'
 import { setCurrentLocationID } from 'libs/redux/sliceData'
-import MapControls from './components/MapControls'
-import {
-  clusterCountLayer,
-  clusterLayer,
-  unclusteredPointLayer,
-  unclusteredQualityLayer,
-  trafficLayer
-} from './components/layers'
+import { trafficLayer } from './components/layers'
+import { debounce } from 'lodash'
+
+const Details = lazy(() => import('components/Details'))
+const CustomMarker = lazy(() => import('./components/CustomMarker'))
+const MapControls = lazy(() => import('./components/MapControls'))
 
 export const MapPage = () => {
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
   const mapRef = useRef<MapRef>(null)
   const locations = useAppSelector((state) => state.data.mapLocation)
+  const [filteredLocations, setFilteredLocations] = useState(locations)
   const [isLoading, setIsLoading] = useState(true)
   const [isStyleLoaded, setIsStyleLoaded] = useState(false)
   const [hasData, setHasData] = useState(false)
+  const [center, setCenter] = useState<[number, number]>([106.692330564, 10.770496918])
+  const [zoom, setZoom] = useState(16)
   const dispatch = useAppDispatch()
   useInitEnvironData()
 
@@ -35,85 +32,81 @@ export const MapPage = () => {
     }
   }, [locations])
 
-  const geojson: FeatureCollection<Point> | null = useMemo(() => {
-    if (!locations || locations.length === 0) {
-      return null
-    }
-
-    return {
-      type: 'FeatureCollection',
-      features: locations.map((location) => ({
-        type: 'Feature',
-        properties: {
-          place: location.place,
-          request: location.request,
-          id: location.id,
-          air_quality: location.air_quality
-        },
-        geometry: {
-          type: 'Point',
-          coordinates: [parseFloat(location.long ?? '106.692330564'), parseFloat(location.lat ?? '10.770496918')]
-        }
-      }))
-    }
-  }, [locations])
-
-  const zoomToDistrict = (e: MapLayerMouseEvent, location?: MapLocation) => {
-    const { long, lat } = location ?? { long: e.lngLat.lng.toString(), lat: e.lngLat.lat.toString() }
+  const zoomToDistrict = useCallback((lng: number, lat: number) => {
     if (mapRef.current) {
       const { lng: currentLong, lat: currentLat } = mapRef.current.getMap().getCenter()
       const currentLocation = point([currentLong, currentLat])
-      const targetLocation = point([
-        parseFloat(long ?? e.lngLat.lng.toString()),
-        parseFloat(lat ?? e.lngLat.lat.toString())
-      ])
+      const targetLocation = point([lng, lat])
       const km = distance(currentLocation, targetLocation, 'kilometers')
 
       mapRef.current.easeTo({
         center: targetLocation.geometry.coordinates as [number, number],
         duration: km * 400,
-        zoom: 16,
+        zoom: 18,
         essential: true
       })
     }
-  }
+  }, [])
 
-  const handleMapClick = (event: MapLayerMouseEvent) => {
-    const features = event.features
-    const unclusteredPoints = features?.filter((f) => f.layer?.id === 'unclustered-point')
+  const locationFilterer = useCallback(
+    (zoom: number, center: [number, number]) => {
+      return locations.filter((location) => {
+        if (zoom > 18) {
+          return true
+        }
+        const locationPoint = point([
+          parseFloat(location.long ?? '106.692330564'),
+          parseFloat(location.lat ?? '10.770496918')
+        ])
+        const currentPoint = point(center)
+        const km = distance(locationPoint, currentPoint, 'kilometers')
+        return km < 10
+      })
+    },
+    [locations]
+  )
 
-    if (unclusteredPoints && unclusteredPoints.length > 0) {
-      const clickedFeature = unclusteredPoints[0]
-      const districtData = locations.find((d) => d.place === clickedFeature.properties?.place)
-
-      if (districtData) {
-        zoomToDistrict(event, districtData)
-        dispatch(setShowDetails({ showDetails: true, district: districtData.place }))
-        dispatch(setCurrentLocationID(districtData.id))
-      }
-    }
-  }
+  const debouncedUpdate = useMemo(() => {
+    return debounce((center: [number, number], zoom: number) => {
+      const filtered = locationFilterer(zoom, center)
+      setFilteredLocations(filtered)
+    }, 300)
+  }, [locationFilterer])
 
   useEffect(() => {
     if (mapRef.current) {
-      // add an image for the camera icon after the map has loaded
-      if (mapRef.current.getMap()) {
-        const image = new Image()
-        image.src = reactIcon
-        image.onload = () => {
-          mapRef.current?.getMap().addImage('camera', image)
-        }
-      }
+      debouncedUpdate(center, zoom)
     }
-  }, [mapRef, isLoading])
+  }, [center, zoom, debouncedUpdate])
 
-  mapRef.current?.on('styledata', function () {
-    setIsStyleLoaded(true)
-  })
+  useEffect(() => {
+    if (mapRef.current) {
+      const map = mapRef.current.getMap()
+      map.on('style.load', () => {
+        setIsStyleLoaded(true)
+      })
+      map.on('style.error', () => {
+        setIsStyleLoaded(false)
+      })
+
+      map.on('styledata', () => {
+        setIsStyleLoaded(true)
+      })
+      map.on('zoomend', () => {
+        if (map.getZoom() !== zoom) {
+          setZoom(map.getZoom())
+        }
+      })
+      map.on('moveend', () => {
+        const center = map.getCenter()
+        setCenter([center.lng, center.lat])
+      })
+    }
+  }, [zoom])
 
   return (
     <div className="flex h-full w-full flex-1">
-      <Spin spinning={isLoading} fullscreen size="large" tip="Loading..." />
+      <Spin spinning={isLoading && isStyleLoaded} fullscreen size="large" tip="Loading..." />
       <Map
         ref={mapRef}
         mapboxAccessToken={mapboxToken}
@@ -121,76 +114,54 @@ export const MapPage = () => {
         style={{ width: '100%' }}
         mapStyle="mapbox://styles/mapbox/standard"
         initialViewState={{
-          latitude: 10.770496918,
-          longitude: 106.692330564,
-          zoom: 16,
+          latitude: center[1],
+          longitude: center[0],
+          zoom: zoom,
           pitch: 70,
           bearing: 0
         }}
         pitchWithRotate
         maxZoom={22}
+        minZoom={14}
         onLoad={() => {
           setIsLoading(false)
         }}
-        interactiveLayerIds={['unclustered-point']}
-        onClick={handleMapClick}
+        onZoom={(e) => {
+          if (e) {
+            setZoom(e.viewState.zoom)
+          }
+        }}
+        onMove={(e) => {
+          if (e) {
+            setCenter([e.viewState.longitude, e.viewState.latitude])
+            setZoom(e.viewState.zoom)
+          }
+        }}
         attributionControl={false}>
-        {isStyleLoaded === true && hasData && (
-          <div>
-            <MapControls />
+        <div>
+          <MapControls />
 
+          {isStyleLoaded === true && hasData && (
             <Source id="traffic" type="vector" url="mapbox://mapbox.mapbox-traffic-v1">
               <Layer {...trafficLayer} />
             </Source>
-
-            {/* <Source
-              id="districts"
-              type="geojson"
-              data={geojson || undefined}
-              cluster={true}
-              clusterMaxZoom={14}
-              clusterRadius={50}
-              clusterProperties={{
-                air_quality: ['max', ['get', 'air_quality']]
-              }}>
-              <Layer {...clusterLayer} />
-              <Layer {...clusterCountLayer} />
-              <Layer {...unclusteredPointLayer} />
-              <Layer {...unclusteredQualityLayer} />
-            </Source> */}
-          </div>
-        )}
-        {locations.map((location, index) => {
+          )}
+        </div>
+        {filteredLocations.map((location, _) => {
           return (
-            <Marker
-              key={location.id}
-              latitude={parseFloat(location.lat ?? '10.770496918')}
-              longitude={parseFloat(location.long ?? '106.692330564')}
-              anchor="bottom"
-              onClick={(e) => {
-                e.originalEvent.stopPropagation()
-                // zoomToDistrict(e, location)
-              }}>
-              <div className="disappearing-appearing-div" style={{ animationDelay: `${index * 2}s` }}>
-                <div
-                  style={{
-                    width: 140,
-                    height: 40,
-                    backgroundColor: '#ff4081',
-                    opacity: 0.8,
-                    alignItems: 'center',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    border: '1px solid white',
-                    borderRadius: 8
-                  }}>
-                  <h3 style={{ color: 'white', textAlign: 'center' }}>{location.place}</h3>
-                </div>
-                <div
-                  style={{ height: 64, width: 2, backgroundColor: '#ff4081', marginBottom: -20, marginLeft: 64 }}></div>
-                <div className="pulsing-dot" />
-              </div>
-            </Marker>
+            <CustomMarker
+              key={location.id.toString()}
+              locationID={location.id.toString()}
+              lat={parseFloat(location.lat ?? '10.770496918')}
+              lng={parseFloat(location.long ?? '106.692330564')}
+              onClick={(locationID: string, lng: number, lat: number) => {
+                zoomToDistrict(lng, lat)
+                dispatch(setShowDetails({ showDetails: true, district: location.place }))
+                dispatch(setCurrentLocationID(parseInt(locationID)))
+              }}
+              air_quality={location.air_quality as number}
+              air_quality_index={location?.air_quality_index as number}
+            />
           )
         })}
       </Map>
