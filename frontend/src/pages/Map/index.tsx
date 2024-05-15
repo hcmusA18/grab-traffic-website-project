@@ -96,6 +96,10 @@ export const MapPage = () => {
     }
   }, [zoom])
 
+  mapRef.current?.on('styledata', function () {
+    setIsStyleLoaded(true)
+  })
+
   return (
     <div className="flex h-full w-full flex-1">
       <Spin spinning={isLoading && isStyleLoaded} fullscreen size="large" tip={t('loading...')} />
@@ -129,7 +133,6 @@ export const MapPage = () => {
             setZoom(e.viewState.zoom)
           }
         }}
-        onStyleData={(_) => setIsStyleLoaded(true)}
         attributionControl={false}>
         <div>
           <MapControls />

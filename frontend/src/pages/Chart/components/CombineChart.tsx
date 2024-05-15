@@ -13,10 +13,10 @@ import {
   ChartOptions,
   ChartData
 } from 'chart.js'
-const Chart = lazy(() => import('react-chartjs-2').then((module) => ({ default: module.Chart })))
+import { Chart } from 'react-chartjs-2'
 import { faker } from '@faker-js/faker'
 import type { Dayjs } from 'dayjs'
-import { lazy, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Spin } from 'antd'
 import colors from 'tailwindcss/colors'
 import { useTranslation } from 'react-i18next'
@@ -172,11 +172,11 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
           type: 'line' as const,
           label: t('traffic'),
           borderColor: colors.indigo[800],
-          pointBackgroundColor: (context: { raw: number }) =>
-            context.raw ? getTrafficColor(context.raw) : colors.cyan[600],
+          // pointBackgroundColor: (context: { raw: number }) =>
+          //   context.raw ? getTrafficColor(context.raw) : colors.cyan[600],
           pointBorderColor: (context: { raw: number }) =>
             context.raw ? getTrafficColor(context.raw) : colors.cyan[600],
-          fill: false,
+          // fill: false,
           borderWidth: 4,
           borderJoinStyle: 'round',
           data: rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0),
