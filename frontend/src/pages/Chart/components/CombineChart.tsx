@@ -18,7 +18,7 @@ import { faker } from '@faker-js/faker'
 import type { Dayjs } from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
 import { Spin } from 'antd'
-import { colors } from 'theme'
+import colors from 'tailwindcss/colors'
 import { useTranslation } from 'react-i18next'
 
 ChartJS.register(
@@ -59,7 +59,7 @@ const defaultChartOptions = {
     },
     datalabels: {
       display: true,
-      color: colors.dark,
+      color: colors.gray[900],
       align: 'end',
       anchor: 'end'
     }
@@ -123,20 +123,37 @@ interface CombineChartProps {
   endDate: Dayjs
 }
 
-const getColor = (value: number) => {
+const getAirColor = (value: number) => {
   if (value === 0) return 'blue'
   if (value < 50) {
-    return colors.green
+    return colors.yellow[300]
   } else if (value < 100) {
-    return colors.yellow
+    return colors.yellow[500]
   } else if (value < 150) {
-    return colors.orange
+    return colors.amber[500]
   } else if (value < 200) {
-    return colors.red
+    return colors.orange[500]
   } else if (value < 300) {
-    return colors.purple
+    return colors.red[500]
   } else {
-    return colors.dark
+    return colors.purple[500]
+  }
+}
+
+const getTrafficColor = (value: number) => {
+  if (value === 0) return 'blue'
+  if (value < 5) {
+    return colors.cyan[300]
+  } else if (value < 10) {
+    return colors.cyan[500]
+  } else if (value < 15) {
+    return colors.blue[500]
+  } else if (value < 20) {
+    return colors.indigo[500]
+  } else if (value < 25) {
+    return colors.purple[500]
+  } else {
+    return colors.violet[500]
   }
 }
 
@@ -154,9 +171,11 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
         const trafficDataset = {
           type: 'line' as const,
           label: 'Traffic',
-          borderColor: colors.orange,
-          pointBackgroundColor: (context: { raw: number }) => (context.raw ? colors.orange : colors.yellow),
-          pointBorderColor: (context: { raw: number }) => (context.raw ? colors.orange : colors.yellow),
+          borderColor: colors.indigo[800],
+          pointBackgroundColor: (context: { raw: number }) =>
+            context.raw ? getTrafficColor(context.raw) : colors.cyan[600],
+          pointBorderColor: (context: { raw: number }) =>
+            context.raw ? getTrafficColor(context.raw) : colors.cyan[600],
           fill: false,
           borderWidth: 4,
           borderJoinStyle: 'round',
@@ -167,7 +186,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
         const airQualityDataset = {
           type: 'bar' as const,
           label: 'Air Quality',
-          backgroundColor: (context: { raw: number }) => getColor(context.raw ?? 0),
+          backgroundColor: (context: { raw: number }) => getAirColor(context.raw ?? 0),
           borderColor: 'white',
           borderWidth: 2,
           data: rawData.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0),

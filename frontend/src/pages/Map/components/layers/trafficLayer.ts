@@ -1,5 +1,6 @@
 import { LayerProps } from 'react-map-gl'
-import { colors } from 'theme/colors'
+// import { colors } from 'theme/colors'
+import colors from 'tailwindcss/colors'
 
 export const trafficLayer = {
   id: 'traffic',
@@ -10,13 +11,13 @@ export const trafficLayer = {
     'line-color': [
       'case',
       ['==', ['get', 'congestion'], 'low'],
-      colors.trafficLow,
+      colors.green[500],
       ['==', ['get', 'congestion'], 'moderate'],
-      colors.trafficModerate,
+      colors.yellow[500],
       ['==', ['get', 'congestion'], 'heavy'],
-      colors.trafficHeavy,
+      colors.rose[500],
       ['==', ['get', 'congestion'], 'severe'],
-      colors.trafficServe,
+      colors.amber[700],
       '#000000'
     ],
     'line-width': 4

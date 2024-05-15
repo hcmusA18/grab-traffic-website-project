@@ -15,6 +15,7 @@ import {
 } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
 import { Bar } from 'react-chartjs-2'
+import { getColorForValue } from 'libs/utils/helper'
 
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement, BarElement, LineElement)
 
@@ -108,11 +109,6 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
       }
     }
   }
-  const getColorForValue = (value: number, colorRanges: { range: [number, number]; color: string }[]): string => {
-    const matchingColor = colorRanges.find(({ range }) => value >= range[0] && value <= range[1])
-    return matchingColor ? matchingColor.color : 'gray'
-  }
-
   const generateChartData = (): ChartData<'bar'> => {
     const labels = ranking.map((rank) => rank[columns[0].key])
     const data = ranking.map((rank) => rank[columns[1].key])
