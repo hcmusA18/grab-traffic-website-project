@@ -153,7 +153,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
         setLoading(true)
         const trafficDataset = {
           type: 'line' as const,
-          label: 'Traffic',
+          label: t('traffic'),
           borderColor: colors.orange,
           pointBackgroundColor: (context: { raw: number }) => (context.raw ? colors.orange : colors.yellow),
           pointBorderColor: (context: { raw: number }) => (context.raw ? colors.orange : colors.yellow),
@@ -166,7 +166,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
 
         const airQualityDataset = {
           type: 'bar' as const,
-          label: 'Air Quality',
+          label: t('air_quality'),
           backgroundColor: (context: { raw: number }) => getColor(context.raw ?? 0),
           borderColor: 'white',
           borderWidth: 2,
@@ -195,7 +195,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
                 Math.max(...rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0)) * 1.3,
               title: {
                 display: true,
-                text: 'Traffic Quality Index'
+                text: t('traffic_quality_index')
               }
             },
             y1: {
@@ -204,7 +204,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
                 Math.max(...rawData.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0)) * 1.3,
               title: {
                 display: true,
-                text: 'Air Quality Index'
+                text: t('air_quality_index')
               }
             }
           }
@@ -217,7 +217,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
     }
 
     fetchData()
-  }, [rawData, labels, location, startDate, endDate])
+  }, [rawData, labels, location, startDate, endDate, t])
   return (
     <div className="h-[20rem] w-full rounded-md border border-gray-200 md:col-span-8 md:h-[32rem]">
       <Spin spinning={loading} tip={t('loading...')} fullscreen />

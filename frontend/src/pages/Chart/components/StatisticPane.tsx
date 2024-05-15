@@ -1,5 +1,7 @@
+/* eslint-disable no-console */
 import { Statistic, StatisticProps } from 'antd'
 import CountUp from 'react-countup'
+import { useTranslation } from 'react-i18next'
 
 const formatter: StatisticProps['formatter'] = (value) => <CountUp end={value as number} separator="." />
 const Items = ({ title, value }: { title: string; value: string | number }) => (
@@ -17,6 +19,8 @@ interface StatisticPaneProps {
 
 export const StatisticPane = ({ className, location, traffic }: StatisticPaneProps) => {
   const API_URL = import.meta.env.VITE_API_BASE_URL
+  const { t } = useTranslation()
+  console.log('Statistic Pane: ', traffic)
 
   return (
     <div className={className ?? ''}>
@@ -33,7 +37,7 @@ export const StatisticPane = ({ className, location, traffic }: StatisticPanePro
       <div className="flex flex-col items-center justify-between space-y-4 rounded-md px-8 py-2">
         {traffic &&
           Object.entries(traffic).map(
-            ([key, value]) => key !== 'average' && <Items key={key} title={key} value={value} />
+            ([key, value]) => key !== 'average' && <Items key={key} title={t(key)} value={value} />
           )}
       </div>
     </div>

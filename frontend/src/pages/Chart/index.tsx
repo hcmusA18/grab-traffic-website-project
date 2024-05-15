@@ -11,6 +11,7 @@ import { LocationService } from 'services/LocationService'
 import { RootState, useAppSelector } from 'libs/redux'
 import { EnviroService } from 'services/EnviroService'
 import { useTranslation } from 'react-i18next'
+import i18n from '../../i18n'
 
 const fetchDailyData = async (location: string, date: string) => {
   const data = await EnviroService.getInstance().getDailyData({ id: location, date })
@@ -120,7 +121,7 @@ export const ChartPage = () => {
     }
     setLocationName(mapLocation.find((loc) => loc.id.toString() === location)?.place ?? 'Ba Tháng Hai - Sư Vạn Hạnh')
     fetchData()
-  }, [location, startDate, endDate, mapLocation])
+  }, [location, startDate, endDate, mapLocation, isWeekly])
 
   return (
     <div className="container grid h-full w-full grid-cols-1 gap-4 py-2 md:grid-cols-12">
@@ -145,9 +146,9 @@ export const ChartPage = () => {
         />
         <Segmented
           className="self-auto "
-          options={['Daily', 'Weekly']}
-          value={isWeekly ? 'Weekly' : 'Daily'}
-          onChange={(value) => setIsWeekly(value === 'Weekly')}
+          options={[t('daily'), t('weekly')]}
+          value={isWeekly ? t('weekly') : t('daily')}
+          onChange={(value) => setIsWeekly(value === t('weekly'))}
         />
       </div>
       {/* Chart and statistics section */}
@@ -159,6 +160,7 @@ export const ChartPage = () => {
             labels={labels}
             startDate={startDate}
             endDate={endDate}
+            key={i18n.language}
           />
           <StatisticPane
             className="border-1 col-span-1 rounded-md border border-gray-200 p-8 md:col-span-4"

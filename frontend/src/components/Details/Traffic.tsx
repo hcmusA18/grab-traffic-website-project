@@ -18,7 +18,7 @@ export const Traffic = () => {
   const [labels, setLabels] = useState<string[]>([])
 
   useEffect(() => {
-    setLabels(['car', 'motorbike', 'bus', 'truck', 'pedestrian', 'bicycle'].map((label) => t(label)))
+    setLabels(['Car', 'Motorbike', 'Bus', 'Truck', 'Pedestrian', 'Bicycle'].map((label) => t(label)))
 
     if (trafficData) {
       const values = [
