@@ -127,7 +127,7 @@ export const Details: React.FC = () => {
     </div>
   ) : (
     <DragCloseDrawer open={showDetails} setOpen={closeDrawer}>
-      <div className="mr-0 w-full bg-white p-4 text-black sm:w-[526px]">
+      <div className="mr-0 w-full overflow-y-auto bg-white p-4 text-black">
         <div className="flex flex-col">
           <div className="flex justify-between">
             <div></div>
