@@ -11,11 +11,11 @@ export const trafficLayer = {
     'line-color': [
       'case',
       ['==', ['get', 'congestion'], 'low'],
-      colors.green[500],
+      colors.lime[400],
       ['==', ['get', 'congestion'], 'moderate'],
-      colors.yellow[500],
+      colors.yellow[400],
       ['==', ['get', 'congestion'], 'heavy'],
-      colors.rose[500],
+      colors.rose[400],
       ['==', ['get', 'congestion'], 'severe'],
       colors.amber[700],
       '#000000'

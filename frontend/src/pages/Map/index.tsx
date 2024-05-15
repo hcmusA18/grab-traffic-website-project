@@ -108,7 +108,7 @@ export const MapPage = () => {
 
   return (
     <div className="flex h-full w-full flex-1">
-      <Spin spinning={isLoading && isStyleLoaded} fullscreen size="large" tip={t('loading...')} />
+      <Spin spinning={isLoading && !isStyleLoaded} fullscreen size="large" tip={t('loading...')} />
       <Map
         ref={mapRef}
         mapboxAccessToken={mapboxToken}
@@ -143,7 +143,7 @@ export const MapPage = () => {
         <div>
           <MapControls />
 
-          {isStyleLoaded === true && hasData && (
+          {!isStyleLoaded && hasData && (
             <Source id="traffic" type="vector" url="mapbox://mapbox.mapbox-traffic-v1">
               <Layer {...trafficLayer} />
             </Source>

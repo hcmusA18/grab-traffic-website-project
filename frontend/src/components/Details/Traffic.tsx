@@ -14,7 +14,7 @@ export const Traffic = () => {
   const { currentTrafficData: trafficData } = useAppSelector((state) => state.data)
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<ChartData<'doughnut'>['datasets']>([])
-  const [isImageLoading, setIsImageLoading] = useState(true)
+  const [, setIsImageLoading] = useState(true)
   const { t, i18n } = useTranslation()
   const [labels, setLabels] = useState<string[]>([])
 
@@ -64,20 +64,13 @@ export const Traffic = () => {
     <Spin spinning={isLoading} size="large" tip={t('loading...')}>
       <div className="flex flex-col items-center space-y-4">
         {locationID !== -1 && (
-          <div className="relative">
-            <img
-              src={API_URL + `/image/locationID=${locationID}`}
-              style={{ objectFit: 'cover' }}
-              className="rounded-md"
-              alt="camera"
-              onLoad={handleImageLoad}
-            />
-            {isImageLoading && (
-              <div className="absolute inset-0 flex items-center justify-center rounded-md bg-gray-200 bg-opacity-50">
-                <Spin size="large" />
-              </div>
-            )}
-          </div>
+          <img
+            src={API_URL + `/image/locationID=${locationID}`}
+            style={{ objectFit: 'cover' }}
+            className="rounded-md"
+            alt="camera"
+            onLoad={handleImageLoad}
+          />
         )}
         <div className="h-full w-full">
           <Doughnut
