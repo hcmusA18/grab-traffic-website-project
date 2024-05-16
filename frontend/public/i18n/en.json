@@ -37,5 +37,9 @@
   "daily": "Daily",
   "weekly": "Weekly",
   "air_quality_index": "Air Quality Index",
-  "traffic_quality_index": "Traffic Quality Index"
+  "traffic_quality_index": "Traffic Quality Index",
+  "weather": "Weather",
+  "temperature": "Temperature",
+  "humidity": "Humidity",
+  "wind_speed": "Wind Speed"
 }

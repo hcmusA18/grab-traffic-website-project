@@ -46,7 +46,7 @@ export const Weather = () => {
   }, [weatherData, t, i18n.language])
 
   return (
-    <div className="flex flex-col rounded-b-md border-2 border-gray-200 p-4">
+    <div className="flex flex-col rounded-b-md border-2 border-gray-200 pb-4 pl-4 pr-4">
       <Radar
         data={{ labels: labels, datasets: data }}
         options={{

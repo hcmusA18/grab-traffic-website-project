@@ -63,7 +63,9 @@ export const AirQuality = () => {
   }, [airData])
   return (
     <div className="flex flex-col rounded-t-md border-x" style={{ borderColor: airColor[500] }}>
-      <div className={`flex flex-col rounded-t-md p-4 text-white`} style={{ backgroundColor: airColor[500] }}>
+      <div
+        className={`flex flex-col rounded-t-md pb-4 pl-4 pr-4 pt-2 text-white`}
+        style={{ backgroundColor: airColor[500] }}>
         <div className="flex items-center justify-center">
           <h3 className="text-2xl font-semibold">{getAirQuality(airData?.air_quality ?? 1)}</h3>
         </div>

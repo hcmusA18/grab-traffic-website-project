@@ -21,7 +21,7 @@ const Traffic = lazy(() => import('./Traffic'))
 const DragCloseDrawer = lazy(() => import('./DragCloseDrawer'))
 
 const CustomTabPane: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <div className="flex flex-col gap-4 pt-4">{children}</div>
+  return <div className="flex flex-col">{children}</div>
 }
 
 const CustomTabBar: TabsProps['renderTabBar'] = (props, DefaultTabBar) => {
@@ -55,7 +55,7 @@ export const Details: React.FC = () => {
   const { t } = useTranslation()
 
   const baseClass =
-    'bg-white transition-[margin-right] ease-in-out duration-500 fixed md:static top-0 bottom-0 right-0 z-40 p-4 w-full sm:w-[526px] text-black'
+    'bg-white transition-[margin-right] ease-in-out duration-500 fixed md:static top-0 bottom-0 right-0 z-40 pt-2 pr-4 pl-4 w-full sm:w-[526px] text-black'
   const appendClass = showDetails ? ' mr-0' : ' hidden'
 
   useInitEnvironData()

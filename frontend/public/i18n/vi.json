@@ -37,5 +37,9 @@
   "daily": "Theo ngày",
   "weekly": "Theo tuần",
   "air_quality_index": "Chỉ số chất lượng không khí",
-  "traffic_quality_index": "Chỉ số chất lượng giao thông"
+  "traffic_quality_index": "Chỉ số chất lượng giao thông",
+  "weather": "Thời tiết",
+  "temperature": "Nhiệt độ",
+  "humidity": "Độ ẩm",
+  "wind_speed": "Vận tốc gió"
 }
