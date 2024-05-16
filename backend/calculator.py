@@ -1,3 +1,4 @@
+from flask import Flask, request, send_file
 # Credit:
 # This AQI from component concentration calculator is created with reference
 # to the AQI calculator made by HardjunoIndracahya. Many thanks to this Github user.
@@ -79,4 +80,55 @@ def calculate_aqi(concentration, pollutant):
   except:
     return 500
 
-# print(calculate_aqi(0.034, "o3"))
+def calculate_aqi_from_dict(dictionary):
+  return max(
+    calculate_aqi(dictionary["co"] * 0.873 * 0.001, "co"), # Convert from miligram/m3 to ppm
+    calculate_aqi(dictionary["no2"] * 0.531 * 1, "no2"), # Convert from miligram/m3 to ppb
+    calculate_aqi(dictionary["so2"] * 0.382 * 1, "so2"), # Convert from miligram/m3 to ppb
+    calculate_aqi(dictionary["o3"] * 0.509 * 0.001, "o3"), # Convert from miligram/m3 to ppm
+    calculate_aqi(dictionary["pm2_5"], "pm2_5"), # Convert from miligram/m3 to ppm
+    calculate_aqi(dictionary["pm10"], "pm10"), # Convert from miligram/m3 to ppm
+  )
+
+def calculate_traffic_index_from_dict(dictionary):
+  try:
+    return (dictionary["person"]*0.25 + (dictionary["bike"] + dictionary["motorbike"])*0.5 + 
+      dictionary["car"]*1 + (dictionary["truck"] + dictionary["bus"])*2)
+  except:
+    return ((dictionary["bike"] + dictionary["motorbike"])*0.5 + 
+      dictionary["car"]*1 + (dictionary["truck"] + dictionary["bus"])*2)
+  
+def traffic_index_to_quality(traffic_index):
+  if (traffic_index < 2.5):
+    return 1
+  elif (traffic_index < 5):
+    return 2
+  elif (traffic_index < 7.5):
+    return 3
+  elif (traffic_index < 10):
+    return 4
+  else:
+    return 5
+
+def calculate_traffic_quality_from_dict(dictionary):
+  traffic_index = calculate_traffic_index_from_dict(dictionary)
+  return traffic_index_to_quality(traffic_index)
+
+def to_lowercase_english(word):
+  INTAB = "ạảãàáâậầấẩẫăắằặẳẵóòọõỏôộổỗồốơờớợởỡéèẻẹẽêếềệểễúùụủũưựữửừứíìịỉĩýỳỷỵỹđ"
+  OUTTAB = "a"*17 + "o"*17 + "e"*11 + "u"*11 + "i"*5 + "y"*5 + "d"
+  word = word.lower()
+  result = ""
+  for char in word:
+    try:
+      result += (OUTTAB[INTAB.index(char)])
+    except:
+      result += (char)
+  return result
+
+def try_read(field, default_value):
+  try:
+    result = request.form.get(field)
+  except:
+    result = default_value
+  return result

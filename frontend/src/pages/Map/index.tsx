@@ -1,131 +1,104 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, useRef } from 'react'
-import {
-  Map,
-  MapRef,
-  Source,
-  Layer,
-  MapLayerMouseEvent,
-  GeolocateControl,
-  LayerProps,
-  NavigationControl,
-  ScaleControl
-} from 'react-map-gl'
-import districts from 'data/districts.json'
-import { FeatureCollection, Point } from 'geojson'
-import { useAppDispatch, setShowDetails } from 'libs/redux'
-import { Details } from 'components/Details'
+import { useState, useRef, useEffect, useCallback, lazy, useMemo } from 'react'
+import { Map, MapRef, Source, Layer } from 'react-map-gl'
+import { useAppDispatch, setShowDetails, useAppSelector, useInitEnvironData } from 'libs/redux'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import './index.css'
+import { Spin } from 'antd'
+import { distance, point } from '@turf/turf'
+import { setCurrentAirData, setCurrentLocationID, setCurrentTrafficData } from 'libs/redux/sliceData'
+import { trafficLayer } from './components/layers'
+import { debounce } from 'lodash'
+import { useTranslation } from 'react-i18next'
+
+const Details = lazy(() => import('components/Details'))
+const CustomMarker = lazy(() => import('./components/CustomMarker'))
+const MapControls = lazy(() => import('./components/MapControls'))
 
 export const MapPage = () => {
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
-  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null)
   const mapRef = useRef<MapRef>(null)
+  const locations = useAppSelector((state) => state.data.mapLocation)
+  const [filteredLocations, setFilteredLocations] = useState(locations)
   const [isLoading, setIsLoading] = useState(true)
+  const [isStyleLoaded, setIsStyleLoaded] = useState(false)
+  const [hasData, setHasData] = useState(false)
+  const [center, setCenter] = useState<[number, number]>([106.692330564, 10.770496918])
+  const [zoom, setZoom] = useState(16)
   const dispatch = useAppDispatch()
+  const { t } = useTranslation()
+  useInitEnvironData()
 
-  const geojson: FeatureCollection<Point> = {
-    type: 'FeatureCollection',
-    features: districts.map((district) => ({
-      type: 'Feature',
-      properties: { place: district.place, request: district.request },
-      geometry: {
-        type: 'Point',
-        coordinates: [parseFloat(district.long), parseFloat(district.lat)]
-      }
-    }))
-  }
-  const clusterLayer = {
-    id: 'clusters',
-    type: 'circle',
-    source: 'districts',
-    filter: ['has', 'point_count'],
-    paint: {
-      'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
-      'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
+  useEffect(() => {
+    if (locations.length > 0 || locations) {
+      setHasData(true)
     }
-  }
-  const clusterCountLayer = {
-    id: 'cluster-count',
-    type: 'symbol',
-    source: 'districts',
-    filter: ['has', 'point_count'],
-    layout: {
-      'text-field': '{point_count_abbreviated}',
-      'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-      'text-size': 12
-    }
-  }
+  }, [locations])
 
-  const unclusteredPointLayer = {
-    id: 'unclustered-point',
-    type: 'circle',
-    source: 'districts',
-    filter: ['!', ['has', 'point_count']],
-    paint: {
-      'circle-color': '#11b4da',
-      'circle-radius': 20,
-      'circle-stroke-width': 1,
-      'circle-stroke-color': '#fff'
-    }
-  }
-
-  const zoomToDistrict = (e: MapLayerMouseEvent, district: (typeof districts)[number]) => {
-    e.originalEvent.stopPropagation()
-    const { long, lat, place } = district
-    setSelectedDistrict(place)
+  const zoomToDistrict = useCallback((lng: number, lat: number) => {
     if (mapRef.current) {
-      mapRef.current.flyTo({
-        center: [parseFloat(long), parseFloat(lat)],
-        zoom: 16
+      const { lng: currentLong, lat: currentLat } = mapRef.current.getMap().getCenter()
+      const currentLocation = point([currentLong, currentLat])
+      const targetLocation = point([lng, lat])
+      const km = distance(currentLocation, targetLocation, 'kilometers')
+
+      mapRef.current.easeTo({
+        center: targetLocation.geometry.coordinates as [number, number],
+        duration: km * 400,
+        zoom: 18,
+        essential: true
       })
     }
-  }
+  }, [])
 
-  const handleMapClick = (event: MapLayerMouseEvent) => {
-    const features = event.features
-    const unclusteredPoints = features?.filter((f) => f.layer?.id === 'unclustered-point')
+  const locationFilterer = useCallback(
+    (zoom: number, center: [number, number]) => {
+      return locations.filter((location) => {
+        if (zoom > 18) {
+          return true
+        }
+        const locationPoint = point([
+          parseFloat(location.long ?? '106.692330564'),
+          parseFloat(location.lat ?? '10.770496918')
+        ])
+        const currentPoint = point(center)
+        const km = distance(locationPoint, currentPoint, 'kilometers')
+        return km < 10
+      })
+    },
+    [locations]
+  )
 
-    if (unclusteredPoints && unclusteredPoints.length > 0) {
-      const clickedFeature = unclusteredPoints[0]
-      const districtData = districts.find((d) => d.place === clickedFeature.properties?.place)
+  const debouncedUpdate = useMemo(() => {
+    return debounce((center: [number, number], zoom: number) => {
+      const filtered = locationFilterer(zoom, center)
+      setFilteredLocations(filtered)
+    }, 300)
+  }, [locationFilterer])
 
-      if (districtData) {
-        console.log('District data:', districtData)
-        zoomToDistrict(event, districtData)
-        dispatch(setShowDetails({ showDetails: true, district: districtData.place }))
-      }
-    } else {
-      setSelectedDistrict(null)
+  useEffect(() => {
+    if (mapRef.current) {
+      debouncedUpdate(center, zoom)
     }
-  }
+  }, [center, zoom, debouncedUpdate])
 
-  const trafficLayer = {
-    id: 'traffic',
-    type: 'line',
-    source: 'traffic',
-    'source-layer': 'traffic',
-    paint: {
-      'line-color': [
-        'case',
-        ['==', ['get', 'congestion'], 'low'],
-        '#00ff00',
-        ['==', ['get', 'congestion'], 'moderate'],
-        '#ffff00',
-        ['==', ['get', 'congestion'], 'heavy'],
-        '#ff0000',
-        ['==', ['get', 'congestion'], 'severe'],
-        '#8b0000',
-        '#000000'
-      ],
-      'line-width': 4
+  useEffect(() => {
+    if (mapRef.current) {
+      const map = mapRef.current.getMap()
+      map.on('zoomend', () => {
+        if (map.getZoom() !== zoom) {
+          setZoom(map.getZoom())
+        }
+      })
+      map.on('moveend', () => {
+        const center = map.getCenter()
+        setCenter([center.lng, center.lat])
+      })
     }
-  }
+  }, [zoom])
 
   return (
     <div className="flex h-full w-full flex-1">
+      <Spin spinning={isLoading && isStyleLoaded} fullscreen size="large" tip={t('loading...')} />
       <Map
         ref={mapRef}
         mapboxAccessToken={mapboxToken}
@@ -133,39 +106,65 @@ export const MapPage = () => {
         style={{ width: '100%' }}
         mapStyle="mapbox://styles/mapbox/standard"
         initialViewState={{
-          latitude: 10.770496918,
-          longitude: 106.692330564,
-          zoom: 16,
+          latitude: center[1],
+          longitude: center[0],
+          zoom: zoom,
           pitch: 70,
           bearing: 0
         }}
+        pitchWithRotate
         maxZoom={22}
-        minZoom={16}
+        minZoom={14}
         onLoad={() => {
           setIsLoading(false)
         }}
-        interactiveLayerIds={['unclustered-point']}
-        onClick={handleMapClick}
+        onIdle={() => {
+          setIsStyleLoaded(true)
+        }}
+        onZoom={(e) => {
+          if (e) {
+            setZoom(e.viewState.zoom)
+          }
+        }}
+        onMove={(e) => {
+          if (e) {
+            setCenter([e.viewState.longitude, e.viewState.latitude])
+            setZoom(e.viewState.zoom)
+          }
+        }}
         attributionControl={false}>
-        <ScaleControl maxWidth={100} unit="metric" />
-        <NavigationControl showCompass showZoom position="bottom-right" />
-        <GeolocateControl positionOptions={{ enableHighAccuracy: true }} trackUserLocation position="bottom-right" />
-        {isLoading && (
-          <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center bg-white bg-opacity-75">
-            <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-t-2 border-gray-900" />
-          </div>
-        )}
-        <Source id="traffic" type="vector" url="mapbox://mapbox.mapbox-traffic-v1">
-          <Layer {...(trafficLayer as LayerProps)} />
-        </Source>
+        <div>
+          <MapControls />
 
-        <Source id="districts" type="geojson" data={geojson} cluster={true} clusterMaxZoom={14} clusterRadius={50}>
-          <Layer {...(clusterLayer as LayerProps)} />
-          <Layer {...(clusterCountLayer as LayerProps)} />
-          <Layer {...(unclusteredPointLayer as LayerProps)} />
-        </Source>
+          {isStyleLoaded && hasData && (
+            <Source id="traffic" type="vector" url="mapbox://mapbox.mapbox-traffic-v1">
+              <Layer {...trafficLayer} />
+            </Source>
+          )}
+        </div>
+        {filteredLocations.map((location, _) => {
+          return (
+            <CustomMarker
+              key={location.id.toString()}
+              locationID={location.id.toString()}
+              lat={parseFloat(location.lat ?? '10.770496918')}
+              lng={parseFloat(location.long ?? '106.692330564')}
+              onClick={(locationID: string, lng: number, lat: number) => {
+                zoomToDistrict(lng, lat)
+                dispatch(setShowDetails({ showDetails: true, district: location.place }))
+                dispatch(setCurrentLocationID(parseInt(locationID)))
+                dispatch(setCurrentAirData(undefined))
+                dispatch(setCurrentTrafficData(undefined))
+              }}
+              air_quality={location.air_quality as number}
+              air_quality_index={location?.air_quality_index as number}
+            />
+          )
+        })}
       </Map>
       <Details />
     </div>
   )
 }
+
+export default MapPage

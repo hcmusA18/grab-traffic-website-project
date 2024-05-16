@@ -1,31 +1,69 @@
-import React from 'react'
-import { FaSmog, FaWind } from 'react-icons/fa'
-import { FaGaugeHigh } from 'react-icons/fa6'
+import { useAppSelector } from 'libs/redux'
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+  ChartData,
+  TooltipItem
+} from 'chart.js'
+import { Radar } from 'react-chartjs-2'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
-interface ItemProps {
-  leadingIcon?: React.ReactNode
-  title: string
-  value: string
-  unit?: string
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend)
+
+export const Weather = () => {
+  const weatherData = useAppSelector((state) => state.data.currentAirData)
+  const [data, setData] = useState<ChartData<'radar'>['datasets']>([])
+  const labels = ['NO', 'NO2', 'SO2', 'PM2.5', 'PM10', 'NH3']
+  const { t, i18n } = useTranslation()
+
+  useEffect(() => {
+    if (weatherData) {
+      const values = [
+        weatherData.no,
+        weatherData.no2,
+        weatherData.so2,
+        weatherData.pm2_5,
+        weatherData.pm10,
+        weatherData.nh3
+      ] as number[]
+      setData([
+        {
+          label: t('air_quality'),
+          data: values,
+          fill: true,
+          backgroundColor: 'rgba(75,192,192,0.2)',
+          borderColor: 'rgba(75,192,192,1)',
+          borderWidth: 1
+        }
+      ])
+    }
+  }, [weatherData, t, i18n.language])
+
+  return (
+    <div className="flex flex-col rounded-b-md border-2 border-gray-200 pb-4 pl-4 pr-4">
+      <Radar
+        data={{ labels: labels, datasets: data }}
+        options={{
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context: TooltipItem<'radar'>) => {
+                  const units = ['mg/m3', 'mg/m3', 'mg/m3', 'µg/m3', 'µg/m3', 'mg/m3']
+                  return `${context.raw} ${units[context.dataIndex]}`
+                }
+              }
+            }
+          }
+        }}
+      />
+    </div>
+  )
 }
 
-const Item: React.FC<ItemProps> = ({ leadingIcon, title, value, unit }) => (
-  <div className="flex flex-row items-center justify-between p-2">
-    <div className="flex flex-row items-center gap-2">
-      {leadingIcon}
-      <p className="text-base font-semibold">{title}</p>
-    </div>
-    <p className="text-base">
-      <span className="font-bold">{value}</span> <span>{unit}</span>
-    </p>
-  </div>
-)
-
-export const Weather = () => (
-  <div className="flex flex-col rounded-md border-2 border-gray-200 p-4">
-    <Item title={'33°C'} value={'Cloudy'} unit={''} />
-    <Item title={'Humidity'} value={'50'} unit={'%'} leadingIcon={<FaSmog className="text-xl" />} />
-    <Item title={'Wind'} value={'10'} unit={'km/h'} leadingIcon={<FaWind className="text-xl" />} />
-    <Item title={'Pressure'} value={'1013'} unit={'hPa'} leadingIcon={<FaGaugeHigh className="text-xl" />} />
-  </div>
-)
+export default Weather
