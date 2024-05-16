@@ -5,6 +5,8 @@ type DataState = {
   currentLocationID: number
   currentTrafficData?: TrafficData
   currentAirData?: AirData
+  numberShow: number
+  rankDecrease: boolean
 }
 
 const DataSlice = createSlice({
@@ -13,7 +15,9 @@ const DataSlice = createSlice({
     mapLocation: [],
     currentLocationID: -1,
     currentTrafficData: undefined,
-    currentAirData: undefined
+    currentAirData: undefined,
+    numberShow: 10,
+    rankDecrease: false
   } as DataState,
   reducers: {
     setMapLocation(state, action: PayloadAction<MapLocation[]>) {
@@ -27,9 +31,22 @@ const DataSlice = createSlice({
     },
     setCurrentAirData(state, action: PayloadAction<AirData | undefined>) {
       return { ...state, currentAirData: action.payload }
+    },
+    setNumberShow(state, action: PayloadAction<number>) {
+      return { ...state, numberShow: action.payload }
+    },
+    setRankDecrease(state, action: PayloadAction<boolean>) {
+      return { ...state, rankDecrease: action.payload }
     }
   }
 })
 
-export const { setMapLocation, setCurrentLocationID, setCurrentTrafficData, setCurrentAirData } = DataSlice.actions
+export const {
+  setMapLocation,
+  setCurrentLocationID,
+  setCurrentTrafficData,
+  setCurrentAirData,
+  setNumberShow,
+  setRankDecrease
+} = DataSlice.actions
 export const dataReducer = DataSlice.reducer

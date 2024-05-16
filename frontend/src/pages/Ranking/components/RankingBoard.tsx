@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -17,6 +17,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels'
 import { Bar } from 'react-chartjs-2'
 import { getColorForValue } from 'libs/utils/helper'
 import colors from 'tailwindcss/colors'
+import { useAppSelector } from 'libs/redux'
 
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement, BarElement, LineElement)
 
@@ -50,6 +51,21 @@ interface RankingBoardProps {
 
 export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: RankingBoardProps) => {
   const { title, columns, color } = options
+  const numberShow = useAppSelector((state) => state.data.numberShow)
+  const rankDecrease = useAppSelector((state) => state.data.rankDecrease)
+
+  const [sortedRanking, setSortedRanking] = useState(ranking)
+
+  useEffect(() => {
+    setSortedRanking(
+      [...ranking].sort((a, b) =>
+        rankDecrease
+          ? Number(b[columns[1].key]) - Number(a[columns[1].key])
+          : Number(a[columns[1].key]) - Number(b[columns[1].key])
+      )
+    )
+  }, [ranking, rankDecrease, columns])
+
   const chartOptions: ChartOptions<'bar'> = {
     indexAxis: 'y' as const,
     elements: {
@@ -60,7 +76,7 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
     responsive: true,
     scales: {
       x: {
-        suggestedMax: Math.max(...ranking.map((rank) => Number(rank[options.columns[1].key]))) * 1.1,
+        suggestedMax: Math.max(...sortedRanking.map((rank) => Number(rank[options.columns[1].key]))) * 1.1,
         ticks: {
           stepSize: 5
         }
@@ -111,8 +127,8 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
     }
   }
   const generateChartData = (): ChartData<'bar'> => {
-    const labels = ranking.map((rank) => rank[columns[0].key])
-    const data = ranking.map((rank) => rank[columns[1].key])
+    const labels = sortedRanking.map((rank) => rank[columns[0].key])
+    const data = sortedRanking.map((rank) => rank[columns[1].key])
 
     const datasets: ChartData<'bar'>['datasets'] = [
       {
@@ -124,10 +140,9 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
       }
     ]
 
-    // only show top 10
-    if (ranking.length > 10) {
-      labels.splice(10)
-      datasets.splice(10)
+    if (sortedRanking.length > numberShow) {
+      labels.splice(numberShow)
+      datasets.splice(numberShow)
     }
 
     return {

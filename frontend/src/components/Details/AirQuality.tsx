@@ -61,6 +61,7 @@ export const AirQuality = () => {
       setAirColor(colorMap[(airData.air_quality ?? 1) - 1])
     }
   }, [airData])
+
   return (
     <div className="flex flex-col rounded-t-md border-x" style={{ borderColor: airColor[500] }}>
       <div
