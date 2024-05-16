@@ -33,3 +33,5 @@ export const CustomImage: FC<CustomImageProps> = ({ src, alt, containerClassName
     </div>
   )
 }
+
+export default CustomImage

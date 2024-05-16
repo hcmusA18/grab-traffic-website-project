@@ -1,3 +1,4 @@
+import axios from 'axios'
 import AxiosHttpService from './AxiosHttpService'
 
 export interface IEnviroService {
@@ -31,6 +32,21 @@ export class EnviroService implements IEnviroService {
       }
     } catch (error) {
       console.error('Error fetching traffic and air data:', error)
+      throw error
+    }
+  }
+
+  async getWeatherData(lng: number, lat: number): Promise<WeatherResponse> {
+    try {
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY
+      const locationKeyUrl = `http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${apiKey}&q=${lat},${lng}`
+      const locationKeyResponse = await axios.get(locationKeyUrl)
+      const locationKey = locationKeyResponse.data.Key
+      const weatherUrl = `http://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${apiKey}&language=vi-vn&details=true`
+      const response = await axios.get(weatherUrl)
+      return response.data[0]
+    } catch (error) {
+      console.error('Error fetching weather data:', error)
       throw error
     }
   }

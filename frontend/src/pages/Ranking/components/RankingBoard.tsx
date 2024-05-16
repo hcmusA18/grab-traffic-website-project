@@ -100,7 +100,7 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
         align: 'start',
         anchor: 'end',
         offset: 4,
-        color: colors.gray[900],
+        color: colors.gray[700],
         font: {
           weight: 'bold'
         },

@@ -1,11 +1,11 @@
 import { Spin } from 'antd'
 import { useAppSelector } from 'libs/redux'
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartData } from 'chart.js'
 import { Doughnut } from 'react-chartjs-2'
 import { useTranslation } from 'react-i18next'
 import colors from 'tailwindcss/colors'
-import { CustomImage } from 'components/CustomImage'
+const CustomImage = lazy(() => import('components/CustomImage'))
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 

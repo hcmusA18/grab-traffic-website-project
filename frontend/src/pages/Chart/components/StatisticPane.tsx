@@ -1,5 +1,6 @@
 import { Statistic, StatisticProps } from 'antd'
-import { CustomImage } from 'components/CustomImage'
+import { lazy } from 'react'
+const CustomImage = lazy(() => import('components/CustomImage'))
 import CountUp from 'react-countup'
 import { useTranslation } from 'react-i18next'
 

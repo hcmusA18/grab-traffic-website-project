@@ -1,9 +1,9 @@
 import { Pagination, Col, Row } from 'antd'
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from 'react-responsive'
 import { LocationService } from 'services/LocationService'
-import { CustomImage } from 'components/CustomImage'
+const CustomImage = lazy(() => import('components/CustomImage'))
 
 interface LocationListProps {
   locationId: string

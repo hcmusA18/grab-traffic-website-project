@@ -128,3 +128,33 @@ interface HttpService {
   get<T>(url: string): Promise<T>
   post<T, U extends Record<string, RecordValue>>(url: string, data?: U): Promise<T>
 }
+
+type WeatherResponse = {
+  WeatherText: string
+  Temperature: {
+    Metric: {
+      Value: number
+      Unit: string
+    }
+  }
+  UVIndex: number
+  UVIndexText: string
+  Wind: {
+    Speed: {
+      Metric: {
+        Value: number
+      }
+    }
+    Direction: {
+      Degrees: number
+      Localized: string
+    }
+  }
+  RelativeHumidity: number
+  Pressure: {
+    Metric: {
+      Value: number
+      Unit: string
+    }
+  }
+}
