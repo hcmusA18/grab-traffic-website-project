@@ -35,6 +35,7 @@ for document in database[collection].find():
 
 # Create a DataFrame
 df_traffic = pd.DataFrame(traffic_data)
+df_traffic = df_traffic[::9]
 
 # Convert 'Datetime' to datetime type and ensure timezone is parsed
 df_traffic.drop('time', axis=1, inplace=True)
@@ -43,7 +44,6 @@ df_traffic.drop('person', axis=1, inplace=True)
 df_traffic['index'] = df_traffic.groupby('place_name').cumcount()
 df_traffic.set_index(['place_name', 'index'], inplace=True)
 df_traffic = df_traffic.unstack(level=0)
-df_traffic = df_traffic[::9]
 df_traffic.reset_index(drop=True, inplace=True)
 
 df_traffic.columns = [' '.join(col).strip()
@@ -100,4 +100,4 @@ for document in database[collection].find():
     prediction_list[idx-len(df_traffic.index)] = dic
   database[collection].find_one_and_update(
       {"place": place_name}, {"$set": {'traffic_data': prediction_list}})
-  prediction_list = []
+  prediction_list = [None] * steps

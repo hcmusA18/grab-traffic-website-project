@@ -40,15 +40,14 @@ for document in database[collection].find():
 
 # Create a DataFrame
 df_air = pd.DataFrame(air_data)
+df_air = df_air[::10]
 
-# Convert 'Datetime' to datetime type and ensure timezone is parsed
 df_air.drop('time', axis=1, inplace=True)
 
 df_air['index'] = df_air.groupby('place_name').cumcount()
 df_air.set_index(['place_name', 'index'], inplace=True)
 df_air = df_air.unstack(level=0)
 
-df_air = df_air[::10]
 df_air.reset_index(drop=True, inplace=True)
 df_air.columns = [' '.join(col).strip()
                   for col in df_air.columns.values]
@@ -59,7 +58,6 @@ for x in df_air.columns:
     series_weights[x] = 2
   else:
     series_weights[x] = 1
-
 forecaster = ForecasterAutoregMultiSeries(
     regressor=GradientBoostingRegressor(random_state=123),
     lags=48,
@@ -69,7 +67,6 @@ forecaster = ForecasterAutoregMultiSeries(
     series_weights=series_weights
 )
 # If you need to pass this to the forecaster, ensure you handle the data format correctly.
-# Fit the forecaster to the DataFrame with only 'car' columns
 forecaster.fit(series=df_air)
 
 steps = 168
