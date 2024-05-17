@@ -51,7 +51,8 @@ const defaultChartOptions = {
       size: {
         height: 20,
         width: 20
-      }
+      },
+      backgroundColor: colors.gray[100]
     },
     title: {
       display: true,
@@ -126,34 +127,34 @@ interface CombineChartProps {
 const getAirColor = (value: number) => {
   if (value === 0) return 'blue'
   if (value < 50) {
-    return colors.yellow[300]
+    return colors.yellow[100]
   } else if (value < 100) {
-    return colors.yellow[500]
+    return colors.yellow[200]
   } else if (value < 150) {
-    return colors.amber[500]
+    return colors.yellow[400]
   } else if (value < 200) {
-    return colors.orange[500]
+    return colors.yellow[500]
   } else if (value < 300) {
-    return colors.red[500]
+    return colors.yellow[600]
   } else {
-    return colors.purple[500]
+    return colors.yellow[700]
   }
 }
 
 const getTrafficColor = (value: number) => {
   if (value === 0) return 'blue'
   if (value < 5) {
-    return colors.cyan[300]
+    return colors.cyan[200]
   } else if (value < 10) {
-    return colors.cyan[500]
+    return colors.cyan[300]
   } else if (value < 15) {
-    return colors.blue[500]
+    return colors.cyan[400]
   } else if (value < 20) {
-    return colors.indigo[500]
+    return colors.cyan[500]
   } else if (value < 25) {
-    return colors.purple[500]
+    return colors.cyan[400]
   } else {
-    return colors.violet[500]
+    return colors.cyan[600]
   }
 }
 
@@ -171,12 +172,9 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
         const trafficDataset = {
           type: 'line' as const,
           label: t('traffic'),
-          borderColor: colors.indigo[800],
-          // pointBackgroundColor: (context: { raw: number }) =>
-          //   context.raw ? getTrafficColor(context.raw) : colors.cyan[600],
+          borderColor: colors.blue[700],
           pointBorderColor: (context: { raw: number }) =>
-            context.raw ? getTrafficColor(context.raw) : colors.cyan[600],
-          // fill: false,
+            context.raw ? getTrafficColor(context.raw) : colors.blue[300],
           borderWidth: 4,
           borderJoinStyle: 'round',
           data: rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0),
@@ -204,7 +202,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
             ...defaultChartOptions.plugins,
             title: {
               display: true,
-              text: `${location ?? 'Ba Tháng Hai - Sư Vạn Hạnh'} ${startDate.format('YYYY-MM-DD')}${endDate.isSame(startDate, 'day') ? '' : ` to ${endDate.format('YYYY-MM-DD')}`}`
+              text: `${location ?? 'Ba Tháng Hai - Sư Vạn Hạnh'} ${startDate.format('DD/MM/YYYY')}${endDate.isSame(startDate, 'day') ? '' : `-${endDate.format('DD/MM/YYYY')}`}`
             }
           },
           scales: {
