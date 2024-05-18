@@ -1,21 +1,20 @@
-import os, requests, json, statistics, io
+import os, requests, json, statistics, io, math, redis, pickle
 from flask import Flask, request, send_file
 from flask_restful import Api, Resource
 from flask_cors import CORS, cross_origin
 from flask_pymongo import PyMongo
-# from flask_caching import Cache
 from datetime import datetime, timedelta
 from collections import Counter
 from database import *
 from calculator import *
-import math
 
 app = Flask(__name__)
 api = Api(app)
 cors = CORS(app)
-# cache = Cache(config = {"CACHE_TYPE": "RedisCache", "CACHE_REDIS_HOST": "0.0.0.0", "CACHE_REDIS_PORT": 6379})
-# cache.init_app(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
+redis_cache = redis.Redis(host = 'redis-12772.c330.asia-south1-1.gce.redns.redis-cloud.com', port='12772',
+    password='B7BUB9zAoancT3l8Uv1gD10r16Nc15Jr')
+
 
 
 class hello(Resource):
@@ -72,7 +71,7 @@ class location_name_autofill(Resource):
       if (keyword in to_lowercase_english(document["place"])):
         locations.append({
           "id": document["id"],
-          "place": 1
+          "place": document["place"]
         })
     return {
       "count": len(locations),
@@ -114,10 +113,9 @@ class data_current(Resource):
     traffic_data["traffic_quality_index"] = calculate_traffic_index_from_dict(traffic_data)
     traffic_data["traffic_quality"] = traffic_index_to_quality(traffic_data["traffic_quality_index"])
     # Get air data
-    air_data = location["air_data"][0]
-    air_quality = air_data["aqp"]
-    air_data["air_quality"] = air_quality
-    air_data["air_quality_index"] = calculate_aqi_from_dict(air_data["components"])
+    air_data = location["air_data"][0]["components"]
+    air_data["air_quality"] = location["air_data"][0]["aqp"]
+    air_data["air_quality_index"] = calculate_aqi_from_dict(location["air_data"][0]["components"])
     return {
       "id": location["id"],
       "name": location["place"],
@@ -134,19 +132,60 @@ class data_daily(Resource):
   def post(self):
     id = int(request.form.get("id"))
     date_str = try_read("date", str(datetime.today().date()))
-    date = datetime.strptime(date_str, '%Y-%m-%d')
-    location = data_summary.find_one({"id": id}, {"id":1, "place":1, date_str: 1})
-    data_hour = [
-      {
-        "hour": i,
-        "traffic_quality_index": location[date_str]["traffic_summary"][i],
-        "air_quality_index": location[date_str]["air_summary"][i]
-      } for i in range(0, 24)
-    ]
-    future = future_summary.find_one({"id": id}, {"id": 1, "traffic_data": {"$slice": 1}, "air_data": {"$slice": 1}})
-    average_traffic = statistics.mean(location[date_str]["traffic_summary"])
-    sum_future_traffic = future["traffic_data"][0]["car"] + future["traffic_data"][0]["bike"] + future["traffic_data"][0]["truck"] + future["traffic_data"][0]["bus"] + future["traffic_data"][0]["motorbike"]
-    average_air = statistics.mean(location[date_str]["air_summary"])
+    date = datetime.strptime(date_str, "%Y-%m-%d")
+    # Get hourly data of the date
+    
+    if (date.date() > datetime.today().date()):
+      location = data_summary.find_one({"id": id}, {"id":1, "place":1})
+      timespan = (date.date() - datetime.today().date()).days
+      future_data = future_summary.find_one({"id": id}, {})
+      average_traffic = 10 # statistics.mean(future_data["traffic_data"][24 * timespan : 24 * timespan + 24])
+      average_air = 110 # statistics.mean(future_data["air_data"][24 * timespan : 24 * timespan + 24])
+      data_hour = [
+        {
+          "hour": i,
+          "traffic_quality_index": calculate_traffic_index_from_dict(future_data["traffic_data"][24 * timespan + i]),
+          "air_quality_index": calculate_aqi_from_dict(future_data["air_data"][24 * timespan + i]),
+          "source": "prediction"
+        } for i in range(0, 24)
+      ]
+    elif (date.date() == datetime.today().date()):
+      print("Today")
+      location = data_summary.find_one({"id": id}, {"id":1, "place":1, date_str: 1})
+      average_traffic = statistics.mean(location[date_str]["traffic_summary"])
+      average_air = statistics.mean(location[date_str]["air_summary"])
+      future_data = future_summary.find_one({"id": id}, {})
+      data_hour = [
+        {
+          "hour": i,
+          "traffic_quality_index": location[date_str]["traffic_summary"][i],
+          "air_quality_index": location[date_str]["air_summary"][i],
+          "source": "historical"
+        } for i in range(0, 24)
+      ]
+      for i in range(datetime.now().hour, 24):
+        data_hour[i] = {
+          "hour": i,
+          "traffic_quality_index": calculate_traffic_index_from_dict(future_data["traffic_data"][i]),
+          "air_quality_index": calculate_aqi_from_dict(future_data["air_data"][i]),
+          "source": "prediction"
+        }
+    else:
+      location = data_summary.find_one({"id": id}, {"id":1, "place":1, date_str: 1})
+      average_traffic = statistics.mean(location[date_str]["traffic_summary"])
+      average_air = statistics.mean(location[date_str]["air_summary"])
+      data_hour = [
+        {
+          "hour": i,
+          "traffic_quality_index": location[date_str]["traffic_summary"][i],
+          "air_quality_index": location[date_str]["air_summary"][i],
+          "source": "historical"
+        } for i in range(0, 24)
+      ]
+    # Get future data to fill in the blank
+    future = future_summary.find_one({"id": id}, {"id": 1, "traffic_data": 1, "air_data": 1})
+    future_traffic = future["traffic_data"]
+    sum_future_traffic = future_traffic[0]["car"] + future_traffic[0]["bike"] + future_traffic[0]["truck"] + future_traffic[0]["bus"] + future_traffic[0]["motorbike"]
     return {
       "id": location["id"],
       "name": location["place"],
@@ -175,32 +214,31 @@ class data_daily(Resource):
 class data_weekly(Resource):
   def post(self):
     id = int(request.form.get("id"))
-    try:
-      today = datetime.strptime(request.form.get("date"), '%Y-%m-%d')
-    except:
-      today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    date_str = try_read("date", str(datetime.today().date()))
+    date = datetime.strptime(date_str, '%Y-%m-%d')
     location = data_summary.find_one({"id": id}, 
-          {"id":1, "place":1, str(today.date()) : 1, str((today - timedelta(1)).date()): 1, str((today - timedelta(2)).date()): 1,
-           str((today - timedelta(3)).date()): 1, str((today - timedelta(4)).date()): 1, str((today - timedelta(5)).date()): 1, str((today - timedelta(6)).date()): 1})
+          {"id":1, "place":1, str(date.date()) : 1, str((date - timedelta(1)).date()): 1, str((date - timedelta(2)).date()): 1,
+           str((date - timedelta(3)).date()): 1, str((date - timedelta(4)).date()): 1, str((date - timedelta(5)).date()): 1, str((date - timedelta(6)).date()): 1})
     data_day = [
       {
         "day": i,
-        "traffic_quality_index": sum(location[str((today - timedelta(6-i)).date())]["traffic_summary"])/24,
-        "air_quality_index": sum(location[str((today - timedelta(6-i)).date())]["air_summary"])/24
+        "traffic_quality_index": sum(location[str((date - timedelta(6-i)).date())]["traffic_summary"])/24,
+        "air_quality_index": sum(location[str((date - timedelta(6-i)).date())]["air_summary"])/24,
+        "source": "historical"
       } for i in range(0, 7)
     ]
     traffic_quality_index = []
     air_quality_index = []
     for i in range(0,7):
-      traffic_quality_index.append( statistics.mean(location[str((today - timedelta(6-i)).date())]["traffic_summary"]) )
-      air_quality_index.append( statistics.mean(location[str((today - timedelta(6-i)).date())]["air_summary"]) )
+      traffic_quality_index.append( statistics.mean(location[str((date - timedelta(6-i)).date())]["traffic_summary"]) )
+      air_quality_index.append( statistics.mean(location[str((date - timedelta(6-i)).date())]["air_summary"]) )
     future = future_summary.find_one({"id": id}, {"id": 1, "traffic_data": {"$slice": 1}, "air_data": {"$slice": 1}})
     sum_future_traffic = future["traffic_data"][0]["car"] + future["traffic_data"][0]["bike"] + future["traffic_data"][0]["truck"] + future["traffic_data"][0]["bus"] + future["traffic_data"][0]["motorbike"]
     average_traffic = statistics.mean(traffic_quality_index)
     return {
       "id": location["id"],
       "name": location["place"],
-      "date": str(today.date()),
+      "date": date_str,
       "data_day": data_day,
       "traffic": {
         "average": average_traffic,
@@ -225,16 +263,12 @@ class data_weekly(Resource):
 class data_range(Resource):
   def post(self):
     id = int(request.form.get("id"))
-    try:
-      date_range = int(request.form.get("range"))
-      if date_range > 7:
-        date_range = 7
-    except:
-      date_range = 3
-    try:
-      today = datetime.strptime(request.form.get("date"), '%Y-%m-%d')
-    except:
-      today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    date_range = int(try_read("range", "3"))
+    if (date_range > 3):
+      date_range = 7
+    today_str = try_read("date", str(datetime.today().date()))
+    today = datetime.strptime(request.form.get("date"), '%Y-%m-%d')
+    
     query_dict = {"id":1, "place":1}
     for i in range(0, date_range):
       query_dict[str((today - timedelta(date_range-1-i)).date())] = 1
@@ -244,7 +278,8 @@ class data_range(Resource):
       {
         "day": i,
         "traffic_quality_index": sum(location[str((today - timedelta(date_range-1-i)).date())]["traffic_summary"])/24,
-        "air_quality_index": sum(location[str((today - timedelta(date_range-1-i)).date())]["air_summary"])/24
+        "air_quality_index": sum(location[str((today - timedelta(date_range-1-i)).date())]["air_summary"])/24,
+        "source": "historical"
       } for i in range(0, date_range)
     ]
     traffic_quality_index = []
@@ -385,7 +420,7 @@ class ranking_daily(Resource):
         change_ranking.append({
           "id": data_piece["id"],
           "name": data_piece["place"],
-          "change_index":  ((avg_air/compared_air) + (avg_traffic/compared_traffic) - 1) * (-100)
+          "change_index":  ((avg_air/compared_air) + (avg_traffic/compared_traffic) - 1) * (-100)/2
         })
       except:
         pass
@@ -422,94 +457,126 @@ class ranking_daily(Resource):
 
 class ranking_weekly(Resource):
   def post(self):
-    try:
-      option = request.form.get("option")
-    except:
-      option = "change"
-    try:
-      today = datetime.strptime(request.form.get("date"), "%Y-%m-%d")
-    except:
-      today = datetime.today()
-    traffic_ranking = []
-    air_ranking = []
-    change_ranking = []
-    for data_piece in data_summary.find({}, {"_id":0, "id": 1, "place": 1, str(today.date()) : 1, str((today - timedelta(1)).date()): 1, str((today - timedelta(2)).date()): 1,
-          str((today - timedelta(3)).date()): 1, str((today - timedelta(4)).date()): 1, str((today - timedelta(5)).date()): 1, str((today - timedelta(6)).date()): 1}):
-      try:
-        data = data_piece[str(today.date())]
-        if (option == "traffic"):
-          avg_traffic = 0
-          for i in range(0, 7):
-            avg_traffic += sum(data_piece[str((today - timedelta(6-i)).date())]["traffic_summary"]) / (24 * 7)
-          traffic_ranking.append({
-            "id": data_piece["id"],
-            "name": data_piece["place"],
-            "traffic_quality_index":  avg_traffic
-          })
-        if (option == "air"):
-          avg_air = 0
-          for i in range(0, 7):
-            avg_air += sum(data_piece[str((today - timedelta(6-i)).date())]["air_summary"]) / (24 * 7) 
-          air_ranking.append({
-            "id": data_piece["id"],
-            "name": data_piece["place"],
-            "air_quality_index":  avg_air
-          })
-        if (option == "change"):
-          avg_air = 0
-          avg_traffic = 0
-          change = 0
-          compared_air = statistics.mean(data_piece[str((today - timedelta(6)).date())]["air_summary"])
-          for i in range(0, 7):
-            avg_air += statistics.mean(data_piece[str((today - timedelta(6-i)).date())]["air_summary"]) / 7 
-          compared_traffic = statistics.mean(data_piece[str((today - timedelta(6)).date())]["air_summary"])
-          for i in range(0, 7):
-            avg_traffic += statistics.mean(data_piece[str((today - timedelta(6-i)).date())]["traffic_summary"]) / 7 
-          change = ((avg_air/compared_air) + (avg_traffic/compared_traffic) - 1) * (-100)/2
-          change_ranking.append({
-            "id": data_piece["id"],
-            "name": data_piece["place"],
-            "change_index":  change
-          })
-      except:
-        print("Error")
-    traffic_ranking = sorted(traffic_ranking, key=lambda d: d['traffic_quality_index'])
-    air_ranking = sorted(air_ranking, key=lambda d: d['air_quality_index'])
-    for i in range(0, len(traffic_ranking)):
-      traffic_ranking[i]["rank"] = i + 1
-    for i in range(0, len(air_ranking)):
-      air_ranking[i]["rank"] = i + 1
-    for i in range(0, len(change_ranking)):
-      change_ranking[i]["rank"] = i + 1
-    if option == "traffic":
-      return {
-        "date": str(datetime.now()),
-        "count": len(traffic_ranking),
-        "option": "traffic",
-        "ranking": traffic_ranking
-      }
-    elif option == "air":
-      return {
-        "date": str(datetime.now()),
-        "count": len(air_ranking),
-        "option": "air",
-        "ranking": air_ranking
-      }
-    else:
-      return {
-        "date": str(datetime.now()),
-        "count": len(change_ranking),
-        "option": "change",
-        "ranking": change_ranking
-      }
+    option = try_read("option", "change")
+    today_str = try_read("date", str(datetime.today().date()))
+    today = datetime.strptime(today_str, "%Y-%m-%d")
+
+    if (option == "traffic"):
+      if (redis_cache.exists("weekly-traffic")):
+        dictionary = redis_cache.get("weekly-traffic")
+        dictionary = pickle.loads(dictionary)
+        return dictionary
+      else:
+        traffic_ranking = []
+        for data_piece in data_summary.find({}, {"_id":0, "id": 1, "place": 1, str(today.date()) : 1, str((today - timedelta(1)).date()): 1, str((today - timedelta(2)).date()): 1,
+              str((today - timedelta(3)).date()): 1, str((today - timedelta(4)).date()): 1, str((today - timedelta(5)).date()): 1, str((today - timedelta(6)).date()): 1}):
+          try:
+            data = data_piece[str(today.date())]
+            avg_traffic = 0
+            for i in range(0, 7):
+              avg_traffic += sum(data_piece[str((today - timedelta(6-i)).date())]["traffic_summary"]) / (24 * 7)
+            traffic_ranking.append({
+              "id": data_piece["id"],
+              "name": data_piece["place"],
+              "traffic_quality_index":  avg_traffic
+            })
+          except:
+            print("Error")
+        traffic_ranking = sorted(traffic_ranking, key=lambda d: d['traffic_quality_index'])
+        for i in range(0, len(traffic_ranking)):
+          traffic_ranking[i]["rank"] = i + 1
+        dictionary = {
+          "date": str(datetime.now()),
+          "count": len(traffic_ranking),
+          "option": "traffic",
+          "ranking": traffic_ranking
+        }
+        dictionary_cache = pickle.dumps(dictionary)
+        redis_cache.set("weekly-traffic", dictionary_cache)
+        redis_cache.expire("weekly-traffic", 3600)
+        return dictionary
+    elif (option == "air"):
+      if (redis_cache.exists("weekly-air")):
+        dictionary = redis_cache.get("weekly-air")
+        dictionary = pickle.loads(dictionary)
+        return dictionary
+      else:
+        air_ranking = []
+        for data_piece in data_summary.find({}, {"_id":0, "id": 1, "place": 1, str(today.date()) : 1, str((today - timedelta(1)).date()): 1, str((today - timedelta(2)).date()): 1,
+              str((today - timedelta(3)).date()): 1, str((today - timedelta(4)).date()): 1, str((today - timedelta(5)).date()): 1, str((today - timedelta(6)).date()): 1}):
+          try:
+            data = data_piece[str(today.date())]
+            avg_air = 0
+            for i in range(0, 7):
+              avg_air += sum(data_piece[str((today - timedelta(6-i)).date())]["air_summary"]) / (24 * 7) 
+            air_ranking.append({
+              "id": data_piece["id"],
+              "name": data_piece["place"],
+              "air_quality_index":  avg_air
+            })
+          except:
+            print("Error")
+        air_ranking = sorted(air_ranking, key=lambda d: d['air_quality_index'])
+        for i in range(0, len(air_ranking)):
+          air_ranking[i]["rank"] = i + 1
+        dictionary =  {
+          "date": str(datetime.now()),
+          "count": len(air_ranking),
+          "option": "air",
+          "ranking": air_ranking
+        }
+        dictionary_cache = pickle.dumps(dictionary)
+        redis_cache.set("weekly-air", dictionary_cache)
+        redis_cache.expire("weekly-air", 3600)
+        return dictionary
+    else: # option == "change"
+      if (redis_cache.exists("weekly-change")):
+        dictionary = redis_cache.get("weekly-change")
+        dictionary = pickle.loads(dictionary)
+        return dictionary
+      else:
+        change_ranking = []
+        for data_piece in data_summary.find({}, {"_id":0, "id": 1, "place": 1, str(today.date()) : 1, str((today - timedelta(1)).date()): 1, str((today - timedelta(2)).date()): 1,
+              str((today - timedelta(3)).date()): 1, str((today - timedelta(4)).date()): 1, str((today - timedelta(5)).date()): 1, str((today - timedelta(6)).date()): 1}):
+          try:
+            data = data_piece[str(today.date())]
+            avg_air = 0
+            avg_traffic = 0
+            change = 0
+            compared_air = statistics.mean(data_piece[str((today - timedelta(6)).date())]["air_summary"])
+            for i in range(0, 7):
+              avg_air += statistics.mean(data_piece[str((today - timedelta(6-i)).date())]["air_summary"]) / 7 
+            compared_traffic = statistics.mean(data_piece[str((today - timedelta(6)).date())]["air_summary"])
+            for i in range(0, 7):
+              avg_traffic += statistics.mean(data_piece[str((today - timedelta(6-i)).date())]["traffic_summary"]) / 7 
+            change = ((avg_air/compared_air) + (avg_traffic/compared_traffic) - 1) * (-100)/2
+            change_ranking.append({
+              "id": data_piece["id"],
+              "name": data_piece["place"],
+              "change_index":  change
+            })
+          except:
+            print("Error")
+        change_ranking = sorted(change_ranking, key=lambda d: d['change_index'])
+        for i in range(0, len(change_ranking)):
+          change_ranking[i]["rank"] = i + 1
+        dictionary = {
+          "date": str(datetime.now()),
+          "count": len(change_ranking),
+          "option": "change",
+          "ranking": change_ranking
+        }
+        dictionary_cache = pickle.dumps(dictionary)
+        redis_cache.set("weekly-change", dictionary_cache)
+        redis_cache.expire("weekly-change", 3600)
+        return dictionary
+      
 
 
 class get_image(Resource):
   def get(self, id):
     url = Place_LatLong_API.find_one({"id": id}, {"_id": 0, "request": 1})["request"]
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"}
-    file = requests.get(url, headers=headers)
-    # benc = base64.b64encode(file.content)
+    file = requests.get(url)
     return send_file(io.BytesIO(file.content), mimetype="image/jpg")
 
 

@@ -83,7 +83,7 @@ def calculate_aqi(concentration, pollutant):
 def calculate_aqi_from_dict(dictionary):
   return max(
     calculate_aqi(dictionary["co"] * 0.873 * 0.001, "co"), # Convert from miligram/m3 to ppm
-    calculate_aqi(dictionary["no2"] * 0.531 * 1, "no2"), # Convert from miligram/m3 to ppb
+    # calculate_aqi(dictionary["no2"] * 0.531 * 1, "no2"), # Convert from miligram/m3 to ppb
     calculate_aqi(dictionary["so2"] * 0.382 * 1, "so2"), # Convert from miligram/m3 to ppb
     calculate_aqi(dictionary["o3"] * 0.509 * 0.001, "o3"), # Convert from miligram/m3 to ppm
     calculate_aqi(dictionary["pm2_5"], "pm2_5"), # Convert from miligram/m3 to ppm
@@ -129,6 +129,8 @@ def to_lowercase_english(word):
 def try_read(field, default_value):
   try:
     result = request.form.get(field)
+    if result == None:
+      result = default_value
   except:
     result = default_value
   return result
