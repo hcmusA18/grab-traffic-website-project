@@ -46,7 +46,7 @@ export const AirQuality = () => {
   useEffect(() => {
     if (currentLocationID !== -1) {
       EnviroService.getInstance()
-        .getWeatherData(long as number, lat as number)
+        .getWeatherData(currentLocationID.toString())
         .then((data) => {
           setWeatherText(data.WeatherText)
           setTemperature(data.Temperature.Metric.Value)

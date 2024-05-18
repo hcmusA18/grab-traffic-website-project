@@ -1,11 +1,18 @@
 # docker-compose.yaml
-version: '3'
+version: '3.7'
 
 services:
   web:
     build: '.'
     ports:
-      - '5000:5000'
+      - '8080:5000'
     environment:
       - FLASK_APP=app
       - LISTEN_PORT=5000
+      - MONGO_USER_NAME=backend
+      - MONGO_PASSWORD=5BmleaOy4vkY9zIb
+      - CORS_HEADERS=Content-Type
+      - REDIS_URI=redis-12772.c330.asia-south1-1.gce.redns.redis-cloud.com
+      - REDIS_PORT=12772
+      - REDIS_PASSWORD=B7BUB9zAoancT3l8Uv1gD10r16Nc15Jr
+      - WEATHER_API_KEY=HqChXLdXm6a9sAwR0XURqPNeUCHxZvYB

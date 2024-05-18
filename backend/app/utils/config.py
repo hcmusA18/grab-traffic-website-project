@@ -12,3 +12,4 @@ CORS_HEADERS = "Content-Type"
 REDIS_URI = os.getenv("REDIS_URI")
 REDIS_PORT = os.getenv("REDIS_PORT", 12272)
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")

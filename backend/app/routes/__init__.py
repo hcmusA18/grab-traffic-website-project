@@ -1,4 +1,5 @@
 from flask_restful import Api
+
 from .data import DataCurrent, DataDaily, DataWeekly, DataRange
 from app.routes.location import (
     LocationAll,
@@ -8,6 +9,7 @@ from app.routes.location import (
 )
 from app.routes.ranking import RankingCurrent, RankingDaily, RankingWeekly
 from app.routes.image import GetImage
+from app.routes.weather import GetWeather
 from app.routes.hello import Hello
 
 
@@ -25,3 +27,4 @@ def init_routes(api: Api):
     api.add_resource(RankingDaily, "/ranking/daily")
     api.add_resource(RankingWeekly, "/ranking/weekly")
     api.add_resource(GetImage, "/image/locationID=<int:id>")
+    api.add_resource(GetWeather, "/weather/locationID=<int:id>")
