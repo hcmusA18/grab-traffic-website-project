@@ -19,7 +19,14 @@ class DataBase(Resource):
         return location_id, date_str, date
 
     def prepare_response(
-        self, location, date_str, data_hour, average_traffic, average_air, future_data
+        self,
+        location,
+        date_str,
+        data,
+        average_traffic,
+        average_air,
+        future_data,
+        data_return="hour",
     ):
         sum_future_traffic = sum(
             [
@@ -35,7 +42,7 @@ class DataBase(Resource):
             "id": location["id"],
             "name": location["place"],
             "date": date_str,
-            "data_hour": data_hour,
+            f"data_{data_return}": data,
             "traffic": self.calculate_future_traffic(
                 future_data, sum_future_traffic, average_traffic
             ),
@@ -87,9 +94,12 @@ class DataBase(Resource):
         for date_key in date_keys:
             query_dict[date_key] = 1
         return data_summary.find_one({"id": location_id}, query_dict)
-    
+
     def get_future_summary_data(self, location_id):
-        return future_summary.find_one({"id": location_id}, {"traffic_data": {"$slice": 1}, "air_data": {"$slice": 1}})
+        return future_summary.find_one(
+            {"id": location_id},
+            {"traffic_data": {"$slice": 1}, "air_data": {"$slice": 1}},
+        )
 
     def calculate_range_data(self, location, date_keys):
         data_day = []
@@ -108,7 +118,7 @@ class DataBase(Resource):
             traffic_quality_index.append(statistics.mean(traffic_summary))
             air_quality_index.append(statistics.mean(air_summary))
         return data_day, traffic_quality_index, air_quality_index
-    
+
     def generate_date_keys(self, date, date_range):
         return [str((date - timedelta(i)).date()) for i in range(date_range)]
 
@@ -176,18 +186,24 @@ class DataDaily(DataBase):
         return self.prepare_response(
             location, date_str, data_hour, average_traffic, average_air, future_data
         )
-        
+
     def prepare_data(self, location_id, date_str, average=True):
-        location = data_summary.find_one({"id": location_id}, {"id": 1, "place": 1, date_str: 1})
+        location = data_summary.find_one(
+            {"id": location_id}, {"id": 1, "place": 1, date_str: 1}
+        )
         average_traffic, average_air = None, None
         if average:
             average_traffic = statistics.mean(location[date_str]["traffic_summary"])
             average_air = statistics.mean(location[date_str]["air_summary"])
-        future_data = future_summary.find_one({"id": location_id}, {'traffic_data': 1, 'air_data': 1})
+        future_data = future_summary.find_one(
+            {"id": location_id}, {"traffic_data": 1, "air_data": 1}
+        )
         return location, average_traffic, average_air, future_data
 
     def get_today_data(self, location_id, date_str):
-        location, average_traffic, average_air, future_data = self.prepare_data(location_id, date_str)
+        location, average_traffic, average_air, future_data = self.prepare_data(
+            location_id, date_str
+        )
 
         data_hour = [
             {
@@ -216,7 +232,9 @@ class DataDaily(DataBase):
         )
 
     def get_past_data(self, location_id, date_str):
-        location, average_traffic, average_air, future_data = self.prepare_data(location_id, date_str)
+        location, average_traffic, average_air, future_data = self.prepare_data(
+            location_id, date_str
+        )
 
         data_hour = [
             {
@@ -236,7 +254,7 @@ class DataDaily(DataBase):
 class DataWeekly(DataBase):
     def post(self):
         location_id, date_str, date = self.get_params()
-        
+
         if date.date() > datetime.today().date():
             return {"error": "Date must be in range today and before"}
 
@@ -250,29 +268,18 @@ class DataWeekly(DataBase):
         )
         future_data = self.get_future_summary_data(location_id)
 
-        sum_future_traffic = sum(
-            [
-                future_data["traffic_data"][0]["car"],
-                future_data["traffic_data"][0]["bike"],
-                future_data["traffic_data"][0]["truck"],
-                future_data["traffic_data"][0]["bus"],
-                future_data["traffic_data"][0]["motorbike"],
-            ]
-        )
-
         average_traffic = statistics.mean(traffic_quality_index)
-        return {
-            "id": location["id"],
-            "name": location["place"],
-            "date": date_str,
-            "data_day": data_day,
-            "traffic": self.calculate_future_traffic(
-                future_data, sum_future_traffic, average_traffic
-            ),
-            "average_air": self.calculate_future_air(
-                future_data, statistics.mean(air_quality_index)
-            ),
-        }
+        average_air = statistics.mean(air_quality_index)
+
+        return self.prepare_response(
+            location,
+            date_str,
+            data_day,
+            average_traffic,
+            average_air,
+            future_data,
+            data_return="day",
+        )
 
 
 class DataRange(DataBase):
@@ -291,26 +298,15 @@ class DataRange(DataBase):
         )
         future_data = self.get_future_summary_data(location_id)
 
-        sum_future_traffic = sum(
-            [
-                future_data["traffic_data"][0]["car"],
-                future_data["traffic_data"][0]["bike"],
-                future_data["traffic_data"][0]["truck"],
-                future_data["traffic_data"][0]["bus"],
-                future_data["traffic_data"][0]["motorbike"],
-            ]
-        )
         average_traffic = statistics.mean(traffic_quality_index)
+        average_air = statistics.mean(air_quality_index)
 
-        return {
-            "id": location["id"],
-            "name": location["place"],
-            "date": date_str,
-            "data_day": data_day,
-            "traffic": self.calculate_future_traffic(
-                future_data, sum_future_traffic, average_traffic
-            ),
-            "average_air": self.calculate_future_air(
-                future_data, statistics.mean(air_quality_index)
-            ),
-        }
+        return self.prepare_response(
+            location,
+            date_str,
+            data_day,
+            average_traffic,
+            average_air,
+            future_data,
+            data_return="day",
+        )
