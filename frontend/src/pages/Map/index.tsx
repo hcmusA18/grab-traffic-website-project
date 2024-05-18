@@ -3,7 +3,7 @@ import { Map, MapRef, Source, Layer } from 'react-map-gl'
 import { useAppDispatch, setShowDetails, useAppSelector, useInitEnvironData } from 'libs/redux'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import './index.css'
-import { Spin } from 'antd'
+import { Spin, Switch } from 'antd'
 import { distance, point } from '@turf/turf'
 import { setCurrentAirData, setCurrentLocationID, setCurrentTrafficData } from 'libs/redux/sliceData'
 import { trafficLayer } from './components/layers'
@@ -24,6 +24,9 @@ export const MapPage = () => {
   const [hasData, setHasData] = useState(false)
   const [center, setCenter] = useState<[number, number]>([106.692330564, 10.770496918])
   const [zoom, setZoom] = useState(16)
+  const [goodQuality, setGoodQuality] = useState(true)
+  const [moderateQuality, setModerateQuality] = useState(true)
+  const [poorQuality, setPoorQuality] = useState(true)
   const dispatch = useAppDispatch()
   const { t } = useTranslation()
   useInitEnvironData()
@@ -96,6 +99,20 @@ export const MapPage = () => {
     }
   }, [zoom])
 
+  useEffect(() => {
+    const filterByQuality = () => {
+      const filtered = locations.filter((location) => {
+        const index = location.air_quality ?? 0
+        if (goodQuality && index >= 1 && index <= 2) return true
+        if (moderateQuality && index >= 3 && index <= 4) return true
+        if (poorQuality && index >= 5) return true
+        return false
+      })
+      setFilteredLocations(filtered)
+    }
+    filterByQuality()
+  }, [goodQuality, moderateQuality, poorQuality, locations])
+
   return (
     <div className="flex h-full w-full flex-1">
       <Spin spinning={isLoading && isStyleLoaded} fullscreen size="large" tip={t('loading...')} />
@@ -162,6 +179,28 @@ export const MapPage = () => {
           )
         })}
       </Map>
+      <div className="z-10 flex justify-end bg-white p-2">
+        <Switch
+          checkedChildren={t('good_quality')}
+          unCheckedChildren={t('good_quality')}
+          checked={goodQuality}
+          onChange={(checked) => setGoodQuality(checked)}
+          rootClassName="mr-2"
+        />
+        <Switch
+          checkedChildren={t('moderate_quality')}
+          unCheckedChildren={t('moderate_quality')}
+          checked={moderateQuality}
+          onChange={(checked) => setModerateQuality(checked)}
+          rootClassName="mr-2"
+        />
+        <Switch
+          checkedChildren={t('poor_quality')}
+          unCheckedChildren={t('poor_quality')}
+          checked={poorQuality}
+          onChange={(checked) => setPoorQuality(checked)}
+        />
+      </div>
       <Details />
     </div>
   )
