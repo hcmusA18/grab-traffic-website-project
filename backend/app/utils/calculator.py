@@ -1,3 +1,6 @@
+from datetime import datetime
+import statistics
+import sys
 from flask import request
 # Credit:
 # This AQI from component concentration calculator is created with reference
@@ -45,13 +48,23 @@ def calculate_aqi(concentration: float, pollutant: str):
     return 500
 
 def calculate_aqi_from_dict(inp: dict):
+  # preprocess input
+  inp = {
+    "co": inp["co"] * 0.873 * 0.001 if "co" in inp else 0, # Convert from milligram/m3 to ppm
+    "no2": inp["no2"] * 0.531 * 1 if "no2" in inp else 0, # Convert from milligram/m3 to ppb
+    "so2": inp["so2"] * 0.382 * 1 if "so2" in inp else 0, # Convert from milligram/m3 to ppb
+    "o3": inp["o3"] * 0.509 * 0.001 if "o3" in inp else 0, # Convert from milligram/m3 to ppm
+    "pm2_5": inp["pm2_5"] if "pm2_5" in inp else 0,
+    "pm10": inp["pm10"] if "pm10" in inp else 0
+  }
+  
   return max(
-    calculate_aqi(inp["co"] * 0.873 * 0.001, "co"), # Convert from milligram/m3 to ppm
-    calculate_aqi(inp["no2"] * 0.531 * 1, "no2"), # Convert from milligram/m3 to ppb
-    calculate_aqi(inp["so2"] * 0.382 * 1, "so2"), # Convert from milligram/m3 to ppb
-    calculate_aqi(inp["o3"] * 0.509 * 0.001, "o3"), # Convert from milligram/m3 to ppm
-    calculate_aqi(inp["pm2_5"], "pm2_5"), # Convert from milligram/m3 to ppm
-    calculate_aqi(inp["pm10"], "pm10"), # Convert from milligram/m3 to ppm
+    calculate_aqi(inp["co"] * 0.873 * 0.001, "co"),
+    calculate_aqi(inp["no2"] * 0.531 * 1, "no2"),
+    calculate_aqi(inp["so2"] * 0.382 * 1, "so2"),
+    calculate_aqi(inp["o3"] * 0.509 * 0.001, "o3"),
+    calculate_aqi(inp["pm2_5"], "pm2_5"),
+    calculate_aqi(inp["pm10"], "pm10"),
   )
 
 def calculate_traffic_index_from_dict(inp: dict):
@@ -96,8 +109,59 @@ def to_lowercase_english(word: str) -> str:
     )
 
 def try_read(field, default_value):
-  try:
-    result = request.form.get(field)
-  except Exception:
-    result = default_value
-  return result
+    try:
+        result = request.form.get(field)
+    except Exception:
+        result = default_value
+    return result
+
+
+def get_date_from_request():
+    try:
+        return datetime.strptime(request.form.get("date"), "%Y-%m-%d")
+    except Exception:
+        return datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def calculate_daily_data(location, date_keys):
+    data_day = [
+        {
+            "day": i,
+            "traffic_quality_index": sum(location[date_key]["traffic_summary"]) / 24,
+            "air_quality_index": sum(location[date_key]["air_summary"]) / 24,
+        }
+        for i, date_key in enumerate(date_keys)
+    ]
+    return data_day
+
+
+def get_quality_index(location, date_keys, quality):
+    return [statistics.mean(location[date][quality]) for date in date_keys]
+
+
+def calculate_traffic(data):
+    traffic_data = data["traffic_data"][0]
+    return (
+        traffic_data["car"]
+        + traffic_data["bike"]
+        + traffic_data["truck"]
+        + traffic_data["bus"]
+        + traffic_data["motorbike"]
+    ), traffic_data
+
+
+def calculate_traffic_components(
+    future_traffic_data, sum_future_traffic, average_traffic
+):
+    return {
+        "average": average_traffic,
+        "bus": (future_traffic_data["bus"] / sum_future_traffic) * average_traffic / 2,
+        "truck": (future_traffic_data["truck"] / sum_future_traffic)
+        * average_traffic
+        / 2,
+        "car": (future_traffic_data["car"] / sum_future_traffic) * average_traffic,
+        "bike": (future_traffic_data["bus"] / sum_future_traffic) * average_traffic * 2,
+        "motorbike": (future_traffic_data["motorbike"] / sum_future_traffic)
+        * average_traffic
+        * 2,
+    }
