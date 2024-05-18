@@ -41,5 +41,8 @@
   "weather": "Thời tiết",
   "temperature": "Nhiệt độ",
   "humidity": "Độ ẩm",
-  "wind_speed": "Vận tốc gió"
+  "wind_speed": "Vận tốc gió",
+  "good_quality_switch": "Tốt",
+  "moderate_quality_switch": "Vừa",
+  "poor_quality_switch": "Xấu"
 }

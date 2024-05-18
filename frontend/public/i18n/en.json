@@ -41,5 +41,8 @@
   "weather": "Weather",
   "temperature": "Temperature",
   "humidity": "Humidity",
-  "wind_speed": "Wind Speed"
+  "wind_speed": "Wind Speed",
+  "good_quality_switch": "Good",
+  "moderate_quality_switch": "Moderate",
+  "poor_quality_switch": "Poor"
 }

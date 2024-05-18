@@ -3,7 +3,7 @@ import { Map, MapRef, Source, Layer } from 'react-map-gl'
 import { useAppDispatch, setShowDetails, useAppSelector, useInitEnvironData } from 'libs/redux'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import './index.css'
-import { Spin } from 'antd'
+import { Spin, Switch } from 'antd'
 import { distance, point } from '@turf/turf'
 import { setCurrentAirData, setCurrentLocationID, setCurrentTrafficData } from 'libs/redux/sliceData'
 import { trafficLayer } from './components/layers'
@@ -24,6 +24,9 @@ export const MapPage = () => {
   const [hasData, setHasData] = useState(false)
   const [center, setCenter] = useState<[number, number]>([106.692330564, 10.770496918])
   const [zoom, setZoom] = useState(16)
+  const [goodQuality, setGoodQuality] = useState(true)
+  const [moderateQuality, setModerateQuality] = useState(true)
+  const [poorQuality, setPoorQuality] = useState(true)
   const dispatch = useAppDispatch()
   const { t } = useTranslation()
   useInitEnvironData()
@@ -68,16 +71,22 @@ export const MapPage = () => {
     [locations]
   )
 
-  const debouncedUpdate = useMemo(() => {
-    return debounce((center: [number, number], zoom: number) => {
-      const filtered = locationFilterer(zoom, center)
-      setFilteredLocations(filtered)
-    }, 300)
-  }, [locationFilterer])
+  const applyFilters = useCallback(() => {
+    const filtered = locationFilterer(zoom, center).filter((location) => {
+      const index = location.air_quality ?? 0
+      if (goodQuality && index >= 1 && index <= 2) return true
+      if (moderateQuality && index >= 3 && index <= 4) return true
+      if (poorQuality && index >= 5) return true
+      return false
+    })
+    setFilteredLocations(filtered)
+  }, [zoom, center, goodQuality, moderateQuality, poorQuality, locationFilterer])
+
+  const debouncedUpdate = useMemo(() => debounce(applyFilters, 300), [applyFilters])
 
   useEffect(() => {
     if (mapRef.current) {
-      debouncedUpdate(center, zoom)
+      debouncedUpdate()
     }
   }, [center, zoom, debouncedUpdate])
 
@@ -85,16 +94,18 @@ export const MapPage = () => {
     if (mapRef.current) {
       const map = mapRef.current.getMap()
       map.on('zoomend', () => {
-        if (map.getZoom() !== zoom) {
-          setZoom(map.getZoom())
-        }
+        setZoom(map.getZoom())
       })
       map.on('moveend', () => {
         const center = map.getCenter()
         setCenter([center.lng, center.lat])
       })
     }
-  }, [zoom])
+  })
+
+  useEffect(() => {
+    applyFilters()
+  }, [goodQuality, moderateQuality, poorQuality, locations, zoom, center, applyFilters])
 
   return (
     <div className="flex h-full w-full flex-1">
@@ -162,6 +173,28 @@ export const MapPage = () => {
           )
         })}
       </Map>
+      <div className="z-10 flex justify-end bg-white p-2">
+        <Switch
+          checkedChildren={t('good_quality_switch')}
+          unCheckedChildren={t('good_quality_switch')}
+          checked={goodQuality}
+          onChange={(checked) => setGoodQuality(checked)}
+          rootClassName="mr-2"
+        />
+        <Switch
+          checkedChildren={t('moderate_quality_switch')}
+          unCheckedChildren={t('moderate_quality_switch')}
+          checked={moderateQuality}
+          onChange={(checked) => setModerateQuality(checked)}
+          rootClassName="mr-2"
+        />
+        <Switch
+          checkedChildren={t('poor_quality_switch')}
+          unCheckedChildren={t('poor_quality_switch')}
+          checked={poorQuality}
+          onChange={(checked) => setPoorQuality(checked)}
+        />
+      </div>
       <Details />
     </div>
   )

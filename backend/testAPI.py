@@ -1,7 +1,8 @@
-import requests, json
+import requests, json, pickle
 from datetime import datetime, timedelta
 from collections import Counter
 from calculator import *
+import redis
 
 # data = requests.get("https://traffic-422115.as.r.appspot.com/location/all")
 # print(data.content.decode("unicode-escape"))
@@ -30,4 +31,4 @@ from calculator import *
 # today = str(datetime.now().date())
 # print(today)
 
-print(to_lowercase_english("Ưu Tiên Cho Người Già"))
+print((datetime.today() - datetime.strptime("2024-05-15", "%Y-%m-%d")).days)
