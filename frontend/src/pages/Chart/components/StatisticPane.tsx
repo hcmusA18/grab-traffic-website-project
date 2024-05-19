@@ -41,11 +41,11 @@ export const StatisticPane = ({ className, location, traffic }: StatisticPanePro
               key !== 'average' && (
                 <Tooltip
                   key={key}
-                  title={`1 ${t(key).toLowerCase()} ${t('per')} ${(1 / (value * 60)).toFixed(2)} ${t('second')}`}
+                  title={`1 ${t(key).toLowerCase()} ${t('per')} ${(1 / value).toFixed(2)} ${t('second')}`}
                   placement="top">
                   <Item
                     title={t(key)}
-                    value={(value * 60).toFixed(2)}
+                    value={value.toFixed(2)}
                     unit={t('traffic_unit')}
                     leadingIcon={iconMap[key as keyof typeof iconMap]}
                   />
