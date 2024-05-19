@@ -14,9 +14,6 @@ const PageSlice = createSlice({
     district: null
   } as PageState,
   reducers: {
-    toggleSideBar(state) {
-      return { ...state, showSideBar: !state.showSideBar }
-    },
     setShowDetails(state, action: PayloadAction<{ showDetails: boolean; district: string | null }>) {
       return {
         ...state,
@@ -27,5 +24,5 @@ const PageSlice = createSlice({
   }
 })
 
-export const { toggleSideBar, setShowDetails } = PageSlice.actions
+export const { setShowDetails } = PageSlice.actions
 export const pageReducer = PageSlice.reducer
