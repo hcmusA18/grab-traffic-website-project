@@ -69,7 +69,7 @@ export const LocationList = ({ locationId, onChangeLocation }: LocationListProps
                   src={API_URL + `/image/locationID=${item.id}`}
                   alt="camera"
                   className=" w-full rounded-t-md object-cover"
-                  containerClassName="w-full h-52 flex items-center justify-center"
+                  containerClassName="w-full h-42 md:h-52 flex items-center justify-center"
                 />
                 <div className="p-4">
                   <h3 className="leading-2 line-clamp-1 text-lg font-bold">{item.place}</h3>

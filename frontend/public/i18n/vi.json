@@ -50,5 +50,8 @@
   "unhealthy_quality_switch": "Xấu",
   "very_unhealthy_quality_switch": "Rất xấu",
   "hazardous_quality_switch": "Nguy hiểm",
-  "locations": "Địa điềm"
+  "locations": "Địa điềm",
+  "appearance_rate": "Tỷ lệ xuất hiện phương tiện",
+  "second": "giây",
+  "per": "mỗi"
 }

@@ -1,21 +1,24 @@
-import { Statistic, StatisticProps } from 'antd'
+import { Tooltip } from 'antd'
 import { lazy } from 'react'
 const CustomImage = lazy(() => import('components/CustomImage'))
-import CountUp from 'react-countup'
 import { useTranslation } from 'react-i18next'
-
-const formatter: StatisticProps['formatter'] = (value) => <CountUp end={value as number} separator="." />
-const Items = ({ title, value }: { title: string; value: string | number }) => (
-  <div className="flex w-full flex-row justify-between space-x-4">
-    <span className="text-xl font-medium capitalize">{title}:</span>
-    <Statistic value={value} formatter={formatter} className="text-lg " />
-  </div>
-)
+import { FaMotorcycle } from 'react-icons/fa'
+import { FaBicycle, FaBus, FaCar, FaTruck, FaWalkieTalkie } from 'react-icons/fa6'
+import Item from 'components/PaneItem'
 
 interface StatisticPaneProps {
   className?: string
   location: string
   traffic?: TrafficData
+}
+
+const iconMap = {
+  car: <FaCar />,
+  bike: <FaBicycle />,
+  truck: <FaTruck />,
+  bus: <FaBus />,
+  person: <FaWalkieTalkie />,
+  motorbike: <FaMotorcycle />
 }
 
 export const StatisticPane = ({ className, location, traffic }: StatisticPaneProps) => {
@@ -24,30 +27,30 @@ export const StatisticPane = ({ className, location, traffic }: StatisticPanePro
 
   return (
     <div className={className ?? ''}>
-      {/* <div className="h-48 flex w-full items-center justify-center rounded-md">
-        {isImageLoading && <Skeleton.Image active /> }
-        <img
-          src={`${API_URL}/image/locationID=${location}`}
-          alt="location"
-          className={`h-full w-full rounded-md object-cover ${isImageLoading ? 'hidden' : ''}`}
-          onLoad={() => setIsImageLoading(false)}
-        />
-      </div> */}
       <CustomImage
         src={`${API_URL}/image/locationID=${location}`}
         alt="location"
         containerClassName="h-48 w-full rounded-md flex items-center justify-center"
         className="h-full w-full rounded-md object-cover"
       />
-      {/* <div className="flex w-full items-center justify-between">
-        <span className="font-medium md:text-lg">Rush hours</span>
-        <span className="text-red-500 md:text-lg">7AM - 9AM</span>
-      </div> */}
-      {/* <h3 className="text-center text-xl font-bold uppercase">Average</h3> */}
-      <div className="flex flex-col items-center justify-between space-y-4 rounded-md px-8 py-2">
+      <div className="flex flex-col space-y-4 rounded-md py-2">
+        <h3 className="text-center text-2xl font-bold capitalize">{t('appearance_rate')}</h3>
         {traffic &&
           Object.entries(traffic).map(
-            ([key, value]) => key !== 'average' && <Items key={key} title={t(key)} value={value} />
+            ([key, value]) =>
+              key !== 'average' && (
+                <Tooltip
+                  key={key}
+                  title={`1 ${t(key).toLowerCase()} ${t('per')} ${(1 / (value * 60)).toFixed(2)} ${t('second')}`}
+                  placement="top">
+                  <Item
+                    title={t(key)}
+                    value={(1 / (value * 60)).toFixed(2)}
+                    unit={t('second')}
+                    leadingIcon={iconMap[key as keyof typeof iconMap]}
+                  />
+                </Tooltip>
+              )
           )}
       </div>
     </div>

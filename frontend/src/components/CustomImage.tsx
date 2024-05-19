@@ -25,8 +25,7 @@ export const CustomImage: FC<CustomImageProps> = ({ src, alt, containerClassName
       {isImageLoading && <Skeleton.Image active />}
       <img
         src={src}
-        style={{ objectFit: 'cover' }}
-        className={`${className ?? ''} ${isImageLoading ? 'hidden' : ''}`}
+        className={`h-full w-full object-cover ${isImageLoading ? 'hidden' : ''} ${className ?? ''}`}
         alt={alt}
         onLoad={handleImageLoad}
       />

@@ -1,29 +1,12 @@
 import { useAppSelector } from 'libs/redux'
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FaCloudSun, FaSmog, FaTemperatureLow, FaWind } from 'react-icons/fa6'
 import { EnviroService } from 'services/EnviroService'
 import { airColorMap, airQualityConfig } from 'libs/utils/constant'
 import { getColorForValue } from 'libs/utils/helper'
+const Item = lazy(() => import('components/PaneItem'))
 
-interface ItemProps {
-  leadingIcon?: React.ReactNode
-  title: string
-  value: string
-  unit?: string
-}
-
-const Item: React.FC<ItemProps> = ({ leadingIcon, title, value, unit }: ItemProps) => (
-  <div className="flex flex-row items-center justify-between p-2">
-    <div className="flex flex-row items-center gap-2">
-      {leadingIcon}
-      <p className="text-base font-semibold">{title}</p>
-    </div>
-    <p className="text-base">
-      <span className="font-bold">{value}</span> <span>{unit}</span>
-    </p>
-  </div>
-)
 export const AirQuality = () => {
   const { t } = useTranslation()
   const { currentAirData: airData, mapLocation, currentLocationID } = useAppSelector((state) => state.data)

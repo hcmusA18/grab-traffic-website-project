@@ -50,5 +50,8 @@
   "unhealthy_quality_switch": "Unhealthy",
   "very_unhealthy_quality_switch": "Very unhealthy",
   "hazardous_quality_switch": "Hazardous",
-  "locations": "Locations"
+  "locations": "Locations",
+  "appearance_rate": "Vehicle Appearance Rate",
+  "second": "second",
+  "per": "per"
 }
