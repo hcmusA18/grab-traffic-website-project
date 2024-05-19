@@ -1,3 +1,5 @@
+import { airColorMap } from 'libs/utils/constant'
+import { getColorForValue } from 'libs/utils/helper'
 import { Marker } from 'react-map-gl'
 
 interface CustomMarkerProps {
@@ -14,12 +16,9 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
   lng,
   lat,
   onClick,
-  air_quality,
   air_quality_index
 }: CustomMarkerProps) => {
   const animationDelay = (parseInt(locationID) % 20) * Math.random()
-  const colorMap = ['bg-green-500', 'bg-yellow-500', 'bg-orange-500', 'bg-red-500', 'bg-purple-500']
-
   return (
     <Marker
       latitude={lat ?? 10.770496918}
@@ -35,11 +34,17 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
         className="disappearing-appearing-div flex flex-col items-center justify-center"
         style={{ animationDelay: `${animationDelay}s` }}>
         <div
-          className={`flex h-8 w-8 translate-y-5 items-center justify-center rounded-full border border-white border-opacity-45 ${colorMap[air_quality - 1]} bg-opacity-80`}>
+          className={`flex h-8 w-8 translate-y-5 items-center justify-center rounded-full border border-white border-opacity-45 bg-opacity-80`}
+          style={{
+            backgroundColor: getColorForValue(air_quality_index, airColorMap)
+          }}>
           <h3 className="text-center text-white">{air_quality_index}</h3>
         </div>
-        <div className={`h-8 w-1 translate-y-5 ${colorMap[air_quality - 1]} bg-opacity-80`} />
-        <div className={`pulsing-dot ${colorMap[air_quality - 1]}`} />
+        <div
+          className={`h-8 w-1 translate-y-5 bg-opacity-80`}
+          style={{ backgroundColor: getColorForValue(air_quality_index, airColorMap) }}
+        />
+        <div className="pulsing-dot" style={{ backgroundColor: getColorForValue(air_quality_index, airColorMap) }} />
       </div>
     </Marker>
   )

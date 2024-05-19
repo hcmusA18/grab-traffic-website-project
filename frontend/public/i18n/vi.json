@@ -7,8 +7,11 @@
   "language.vi": "Tiếng Việt",
   "location": "Vị trí",
   "air_quality_percent_change": "Thay đổi chất lượng không khí (%)",
-  "good_quality": "Chất lượng tốt",
-  "moderate_quality": "Chất lượng vừa",
+  "good_quality": "Không khí tốt",
+  "moderate_quality": "Không khí an toàn",
+  "unhealthy_quality": "Không khí xấu",
+  "very_unhealthy_quality": "Không khí rất xấu",
+  "hazardous_quality": "Không khí nguy hiểm",
   "poor_quality": "Chất lượng xấu",
   "air_quality": "Không khí",
   "traffic": "Giao thông",
@@ -44,5 +47,8 @@
   "wind_speed": "Vận tốc gió",
   "good_quality_switch": "Tốt",
   "moderate_quality_switch": "Vừa",
-  "poor_quality_switch": "Xấu"
+  "unhealthy_quality_switch": "Xấu",
+  "very_unhealthy_quality_switch": "Rất xấu",
+  "hazardous_quality_switch": "Nguy hiểm",
+  "locations": "Địa điềm"
 }

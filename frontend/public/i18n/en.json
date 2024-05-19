@@ -9,6 +9,9 @@
   "air_quality_percent_change": "Air Quality Percent Change",
   "good_quality": "Good Quality",
   "moderate_quality": "Moderate Quality",
+  "unhealthy_quality": "Unhealthy Quality",
+  "very_unhealthy_quality": "Very Unhealthy Quality",
+  "hazardous_quality": "Hazardous Quality",
   "poor_quality": "Poor Quality",
   "air_quality": "Air",
   "traffic": "Traffic",
@@ -44,5 +47,8 @@
   "wind_speed": "Wind Speed",
   "good_quality_switch": "Good",
   "moderate_quality_switch": "Moderate",
-  "poor_quality_switch": "Poor"
+  "unhealthy_quality_switch": "Unhealthy",
+  "very_unhealthy_quality_switch": "Very unhealthy",
+  "hazardous_quality_switch": "Hazardous",
+  "locations": "Locations"
 }

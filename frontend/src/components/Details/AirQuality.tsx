@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FaCloudSun, FaSmog, FaTemperatureLow, FaWind } from 'react-icons/fa6'
 import { EnviroService } from 'services/EnviroService'
-import colors from 'tailwindcss/colors'
+import { airColorMap, airQualityConfig } from 'libs/utils/constant'
+import { getColorForValue } from 'libs/utils/helper'
 
 interface ItemProps {
   leadingIcon?: React.ReactNode
@@ -23,24 +24,25 @@ const Item: React.FC<ItemProps> = ({ leadingIcon, title, value, unit }: ItemProp
     </p>
   </div>
 )
-const colorMap = [colors.green, colors.yellow, colors.orange, colors.rose, colors.purple]
 export const AirQuality = () => {
   const { t } = useTranslation()
   const { currentAirData: airData, mapLocation, currentLocationID } = useAppSelector((state) => state.data)
   const { long, lat } = mapLocation.find((location) => location.id === currentLocationID) || { long: 0, lat: 0 }
-  const [airColor, setAirColor] = useState(colorMap[0])
   const [weatherText, setWeatherText] = useState('')
   const [temperature, setTemperature] = useState(0)
   const [humidity, setHumidity] = useState(0)
   const [windSpeed, setWindSpeed] = useState(0)
 
-  const getAirQuality = (airQuality: number) => {
-    if (airQuality >= 1 && airQuality < 3) {
-      return t('good_quality')
-    } else if (airQuality >= 3 && airQuality < 5) {
-      return t('moderate_quality')
-    } else if (airQuality >= 5) {
-      return t('poor_quality')
+  const getAirQuality = (airQualityIndex: number) => {
+    for (const [key, value] of Object.entries(airQualityConfig)) {
+      if (
+        value &&
+        airQualityIndex >= value.min &&
+        airQualityIndex <= value.max &&
+        Object.keys(airQualityConfig).indexOf(key) <= airQualityIndex
+      ) {
+        return t(`${key}_quality`)
+      }
     }
   }
   useEffect(() => {
@@ -56,19 +58,15 @@ export const AirQuality = () => {
     }
   }, [currentLocationID, lat, long])
 
-  useEffect(() => {
-    if (airData) {
-      setAirColor(colorMap[(airData.air_quality ?? 1) - 1])
-    }
-  }, [airData])
-
   return (
-    <div className="flex flex-col rounded-t-md border-x" style={{ borderColor: airColor[500] }}>
+    <div
+      className="flex flex-col rounded-t-md border-x"
+      style={{ borderColor: getColorForValue(airData?.air_quality_index as number, airColorMap) }}>
       <div
         className={`flex flex-col rounded-t-md pb-4 pl-4 pr-4 pt-2 text-white`}
-        style={{ backgroundColor: airColor[500] }}>
+        style={{ backgroundColor: getColorForValue(airData?.air_quality_index as number, airColorMap), opacity: 0.8 }}>
         <div className="flex items-center justify-center">
-          <h3 className="text-2xl font-semibold">{getAirQuality(airData?.air_quality ?? 1)}</h3>
+          <h3 className="text-2xl font-semibold">{getAirQuality(airData?.air_quality_index as number)}</h3>
         </div>
         <div className="flex items-end justify-center align-bottom">
           <h4 className="text-7xl font-semibold">
@@ -77,8 +75,10 @@ export const AirQuality = () => {
           </h4>
         </div>
         <div
-          className={`mx-20 flex flex-row items-center justify-center gap-4 rounded-md bg-white p-2`}
-          style={{ color: airColor[700] }}>
+          className={`mx-20 flex flex-row items-center justify-center gap-4 rounded-md bg-white p-2 bg-blend-darken`}
+          style={{
+            color: getColorForValue(airData?.air_quality_index as number, airColorMap)
+          }}>
           <p className="text-base font-semibold">PM2.5</p>
           <p className="text-base">{airData?.pm2_5} µg/m3</p>
         </div>

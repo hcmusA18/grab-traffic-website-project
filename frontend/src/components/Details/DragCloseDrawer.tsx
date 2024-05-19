@@ -57,14 +57,14 @@ export const DragCloseDrawer: React.FC<DragCloseDrawerProps> = ({ children, open
               top: 0,
               bottom: 0.5
             }}>
-            <div className="absolute left-0 right-0 top-0 z-10 flex justify-center p-4">
+            <div className="absolute left-0 right-0 top-0 z-10 flex justify-center bg-white p-4 shadow">
               <button
                 onPointerDown={(e) => {
                   controls.start(e)
                 }}
                 className="h-2 w-14 cursor-grab touch-none rounded-full bg-neutral-700 active:cursor-grabbing"></button>
             </div>
-            <div className="relative z-0 h-full overflow-y-scroll p-4 pt-2">{children}</div>
+            <div className="relative z-0 mt-4 h-full overflow-y-scroll p-4 pt-2">{children}</div>
           </motion.div>
         </motion.div>
       )}

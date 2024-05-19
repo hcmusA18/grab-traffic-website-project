@@ -3,16 +3,37 @@ import { Map, MapRef, Source, Layer } from 'react-map-gl'
 import { useAppDispatch, setShowDetails, useAppSelector, useInitEnvironData } from 'libs/redux'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import './index.css'
-import { Spin, Switch } from 'antd'
+import { Spin, Switch, Tooltip } from 'antd'
 import { distance, point } from '@turf/turf'
 import { setCurrentAirData, setCurrentLocationID, setCurrentTrafficData } from 'libs/redux/sliceData'
 import { trafficLayer } from './components/layers'
 import { debounce } from 'lodash'
 import { useTranslation } from 'react-i18next'
+import colors from 'tailwindcss/colors'
+import { airQualityConfig } from 'libs/utils/constant'
 
 const Details = lazy(() => import('components/Details'))
 const CustomMarker = lazy(() => import('./components/CustomMarker'))
 const MapControls = lazy(() => import('./components/MapControls'))
+
+const useAirQualityFilters = () => {
+  const [filters, setFilters] = useState({
+    good: true,
+    moderate: true,
+    unhealthy: true,
+    very_unhealthy: true,
+    hazardous: true
+  })
+
+  const toggleFilter = (quality: keyof typeof airQualityConfig) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [quality]: !prevFilters[quality]
+    }))
+  }
+
+  return { filters, toggleFilter }
+}
 
 export const MapPage = () => {
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
@@ -24,16 +45,42 @@ export const MapPage = () => {
   const [hasData, setHasData] = useState(false)
   const [center, setCenter] = useState<[number, number]>([106.692330564, 10.770496918])
   const [zoom, setZoom] = useState(16)
-  const [goodQuality, setGoodQuality] = useState(true)
-  const [moderateQuality, setModerateQuality] = useState(true)
-  const [poorQuality, setPoorQuality] = useState(true)
+  const [qualityLength, setQualityLength] = useState<{
+    good: number
+    moderate: number
+    unhealthy: number
+    very_unhealthy: number
+    hazardous: number
+  }>({
+    good: 0,
+    moderate: 0,
+    unhealthy: 0,
+    very_unhealthy: 0,
+    hazardous: 0
+  })
   const dispatch = useAppDispatch()
   const { t } = useTranslation()
+  const { filters, toggleFilter } = useAirQualityFilters()
   useInitEnvironData()
 
   useEffect(() => {
-    if (locations.length > 0 || locations) {
+    if (locations.length > 0) {
       setHasData(true)
+      const qualityCounts = locations.reduce(
+        (counts, item) => {
+          const index = item.air_quality_index as number
+          for (const [key, value] of Object.entries(airQualityConfig)) {
+            if (index >= value.min && index <= value.max) {
+              counts[key as keyof typeof qualityCounts]++
+              break // If a match is found, no need to check further
+            }
+          }
+          return counts
+        },
+        { good: 0, moderate: 0, unhealthy: 0, very_unhealthy: 0, hazardous: 0 }
+      )
+
+      setQualityLength(qualityCounts)
     }
   }, [locations])
 
@@ -53,34 +100,22 @@ export const MapPage = () => {
     }
   }, [])
 
-  const locationFilterer = useCallback(
-    (zoom: number, center: [number, number]) => {
-      return locations.filter((location) => {
-        if (zoom > 18) {
+  const applyFilters = useCallback(() => {
+    const filtered = locations.filter((location) => {
+      const index = location.air_quality_index ?? 0
+      for (const [key, value] of Object.entries(filters)) {
+        if (
+          value &&
+          index >= airQualityConfig[key as keyof typeof airQualityConfig].min &&
+          index <= airQualityConfig[key as keyof typeof airQualityConfig].max
+        ) {
           return true
         }
-        const locationPoint = point([
-          parseFloat(location.long ?? '106.692330564'),
-          parseFloat(location.lat ?? '10.770496918')
-        ])
-        const currentPoint = point(center)
-        const km = distance(locationPoint, currentPoint, 'kilometers')
-        return km < 10
-      })
-    },
-    [locations]
-  )
-
-  const applyFilters = useCallback(() => {
-    const filtered = locationFilterer(zoom, center).filter((location) => {
-      const index = location.air_quality ?? 0
-      if (goodQuality && index >= 1 && index <= 2) return true
-      if (moderateQuality && index >= 3 && index <= 4) return true
-      if (poorQuality && index >= 5) return true
+      }
       return false
     })
     setFilteredLocations(filtered)
-  }, [zoom, center, goodQuality, moderateQuality, poorQuality, locationFilterer])
+  }, [locations, filters])
 
   const debouncedUpdate = useMemo(() => debounce(applyFilters, 300), [applyFilters])
 
@@ -90,22 +125,7 @@ export const MapPage = () => {
     }
   }, [center, zoom, debouncedUpdate])
 
-  useEffect(() => {
-    if (mapRef.current) {
-      const map = mapRef.current.getMap()
-      map.on('zoomend', () => {
-        setZoom(map.getZoom())
-      })
-      map.on('moveend', () => {
-        const center = map.getCenter()
-        setCenter([center.lng, center.lat])
-      })
-    }
-  })
-
-  useEffect(() => {
-    applyFilters()
-  }, [goodQuality, moderateQuality, poorQuality, locations, zoom, center, applyFilters])
+  const airQualityKeys = Object.keys(airQualityConfig) as (keyof typeof airQualityConfig)[]
 
   return (
     <div className="flex h-full w-full flex-1">
@@ -125,7 +145,7 @@ export const MapPage = () => {
         }}
         pitchWithRotate
         maxZoom={22}
-        minZoom={14}
+        minZoom={12}
         onLoad={() => {
           setIsLoading(false)
         }}
@@ -173,27 +193,23 @@ export const MapPage = () => {
           )
         })}
       </Map>
-      <div className="z-10 flex justify-end bg-white p-2">
-        <Switch
-          checkedChildren={t('good_quality_switch')}
-          unCheckedChildren={t('good_quality_switch')}
-          checked={goodQuality}
-          onChange={(checked) => setGoodQuality(checked)}
-          rootClassName="mr-2"
-        />
-        <Switch
-          checkedChildren={t('moderate_quality_switch')}
-          unCheckedChildren={t('moderate_quality_switch')}
-          checked={moderateQuality}
-          onChange={(checked) => setModerateQuality(checked)}
-          rootClassName="mr-2"
-        />
-        <Switch
-          checkedChildren={t('poor_quality_switch')}
-          unCheckedChildren={t('poor_quality_switch')}
-          checked={poorQuality}
-          onChange={(checked) => setPoorQuality(checked)}
-        />
+      <div className="fixed bottom-0 left-0 z-10 mb-4 ml-2 flex flex-col justify-start space-y-2 rounded-md bg-white bg-opacity-80 px-3 py-2 md:flex-row md:space-x-2 md:rounded-full">
+        {airQualityKeys.map((key) => (
+          <Tooltip key={key} title={`${qualityLength[key]} ${t('location')}`} placement="topRight">
+            <Switch
+              checkedChildren={t(`${key}_quality_switch`)}
+              unCheckedChildren={t(`${key}_quality_switch`)}
+              checked={filters[key]}
+              onChange={() => toggleFilter(key)}
+              style={{
+                backgroundColor: filters[key] ? airQualityConfig[key].color : colors.gray[300]
+              }}
+            />
+          </Tooltip>
+        ))}
+        <span className="md:ml-2">
+          {filteredLocations.length} {t('locations')}
+        </span>
       </div>
       <Details />
     </div>
