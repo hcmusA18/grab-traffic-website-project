@@ -53,5 +53,6 @@
   "locations": "Locations",
   "appearance_rate": "Vehicle Appearance Rate",
   "second": "second",
-  "per": "per"
+  "per": "per",
+  "traffic_unit": "vehicle/sec"
 }

@@ -45,8 +45,8 @@ export const StatisticPane = ({ className, location, traffic }: StatisticPanePro
                   placement="top">
                   <Item
                     title={t(key)}
-                    value={(1 / (value * 60)).toFixed(2)}
-                    unit={t('second')}
+                    value={(value * 60).toFixed(2)}
+                    unit={t('traffic_unit')}
                     leadingIcon={iconMap[key as keyof typeof iconMap]}
                   />
                 </Tooltip>

@@ -53,5 +53,6 @@
   "locations": "Địa điềm",
   "appearance_rate": "Tỷ lệ xuất hiện phương tiện",
   "second": "giây",
-  "per": "mỗi"
+  "per": "mỗi",
+  "traffic_unit": "xe/giây"
 }
