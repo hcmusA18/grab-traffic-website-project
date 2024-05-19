@@ -1717,6 +1717,18 @@
   resolved "https://registry.npmjs.org/@ungap/structured-clone/-/structured-clone-1.2.0.tgz"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
+"@vercel/analytics@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.npmjs.org/@vercel/analytics/-/analytics-1.2.2.tgz"
+  integrity sha512-X0rctVWkQV1e5Y300ehVNqpOfSOufo7ieA5PIdna8yX/U7Vjz0GFsGf4qvAhxV02uQ2CVt7GYcrFfddXXK2Y4A==
+  dependencies:
+    server-only "^0.0.1"
+
+"@vercel/speed-insights@^1.0.10":
+  version "1.0.10"
+  resolved "https://registry.npmjs.org/@vercel/speed-insights/-/speed-insights-1.0.10.tgz"
+  integrity sha512-4uzdKB0RW6Ff2FkzshzjZ+RlJfLPxgm/00i0XXgxfMPhwnnsk92YgtqsxT9OcPLdJUyVU1DqFlSWWjIQMPkh0g==
+
 "@vitejs/plugin-react-swc@^3.5.0":
   version "3.6.0"
   resolved "https://registry.npmjs.org/@vitejs/plugin-react-swc/-/plugin-react-swc-3.6.0.tgz"
@@ -4641,7 +4653,7 @@ react-use-measure@^2.1.1:
   dependencies:
     debounce "^1.2.1"
 
-react@*, "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.9.0 || ^17.0.0 || ^18", react@^18.0, react@^18.0.0, react@^18.2.0, react@^18.3.1, "react@>= 16.3.0", "react@>= 16.8.0", react@>=16.0.0, react@>=16.11.0, react@>=16.13, react@>=16.3.0, react@>=16.8, react@>=16.8.0, react@>=16.9.0:
+react@*, "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.9.0 || ^17.0.0 || ^18", "react@^18 || ^19", react@^18.0, react@^18.0.0, react@^18.2.0, react@^18.3.1, "react@>= 16.3.0", "react@>= 16.8.0", react@>=16.0.0, react@>=16.11.0, react@>=16.13, react@>=16.3.0, react@>=16.8, react@>=16.8.0, react@>=16.9.0:
   version "18.3.1"
   resolved "https://registry.npmjs.org/react/-/react-18.3.1.tgz"
   integrity sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==
@@ -4861,6 +4873,11 @@ serialize-to-js@^3.1.2:
   version "3.1.2"
   resolved "https://registry.npmjs.org/serialize-to-js/-/serialize-to-js-3.1.2.tgz"
   integrity sha512-owllqNuDDEimQat7EPG0tH7JjO090xKNzUtYz6X+Sk2BXDnOCilDdNLwjWeFywG9xkJul1ULvtUQa9O4pUaY0w==
+
+server-only@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.npmjs.org/server-only/-/server-only-0.0.1.tgz"
+  integrity sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==
 
 set-function-length@^1.2.1:
   version "1.2.2"
