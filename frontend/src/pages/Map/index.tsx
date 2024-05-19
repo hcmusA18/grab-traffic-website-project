@@ -11,6 +11,7 @@ import { debounce } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import colors from 'tailwindcss/colors'
 import { airQualityConfig } from 'libs/utils/constant'
+import { useMediaQuery } from 'react-responsive'
 
 const Details = lazy(() => import('components/Details'))
 const CustomMarker = lazy(() => import('./components/CustomMarker'))
@@ -61,6 +62,7 @@ export const MapPage = () => {
   const dispatch = useAppDispatch()
   const { t } = useTranslation()
   const { filters, toggleFilter } = useAirQualityFilters()
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
   useInitEnvironData()
 
   useEffect(() => {
@@ -193,7 +195,8 @@ export const MapPage = () => {
           )
         })}
       </Map>
-      <div className="fixed bottom-0 left-0 z-10 mb-4 ml-2 flex flex-col justify-start space-y-2 rounded-md bg-white bg-opacity-80 px-3 py-2 md:flex-row md:space-x-2 md:rounded-full">
+      <div
+        className={`fixed bottom-0 left-0 z-10 mb-4 ml-2 flex flex-col justify-start ${isMobile ? 'space-y-2' : 'space-x-2'} rounded-md bg-white bg-opacity-80 px-3 py-2 md:flex-row md:rounded-full`}>
         {airQualityKeys.map((key) => (
           <Tooltip key={key} title={`${qualityLength[key]} ${t('location')}`} placement="topRight">
             <Switch
