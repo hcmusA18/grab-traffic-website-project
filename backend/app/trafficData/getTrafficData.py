@@ -1,3 +1,4 @@
+import io
 import requests
 import time
 from PIL import Image
@@ -16,7 +17,7 @@ def getTrafficData(path, db, collection):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"}
 
     # Save image
-    k = 'backend/trafficData/data/images/' + f'{path[0]}.jpg'
+    k = 'backend/app/trafficData/data/images/' + f'{path[0]}.jpg'
 
     saigon = timezone('Asia/Saigon')
     timepoint = datetime.now(saigon)
@@ -30,6 +31,11 @@ def getTrafficData(path, db, collection):
             im = Image.open(k)
             imB = im.resize((1024, 576))
             imB.save(k)
+            # save image into mongodb
+            image_bytes = io.BytesIO()
+            imB.save(image_bytes, format='JPEG')
+            db["images"].update_one({"id": path[0]}, {"$set": {"image": image_bytes.getvalue()}}, upsert=True)
+            
             s = run(source=k, nosave=True)
             x = s.split()
             count, car, bike, truck, bus, person, motorbike = 0, 0, 0, 0, 0, 0, 0
