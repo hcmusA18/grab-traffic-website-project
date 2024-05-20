@@ -20,6 +20,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Spin } from 'antd'
 import colors from 'tailwindcss/colors'
 import { useTranslation } from 'react-i18next'
+import { getColorForValue } from 'libs/utils/helper'
+import { airColorMap } from 'libs/utils/constant'
 
 ChartJS.register(
   CategoryScale,
@@ -72,7 +74,7 @@ const defaultChartOptions = {
       position: 'left' as const,
       tilte: {
         display: true,
-        text: 'Traffic Quality Index'
+        text: 'Air Quality Index'
       }
     },
     y1: {
@@ -88,7 +90,7 @@ const defaultChartOptions = {
       },
       title: {
         display: true,
-        text: 'Air Quality Index'
+        text: 'Traffic Quality Index'
       }
     }
   }
@@ -124,39 +126,14 @@ interface CombineChartProps {
   endDate: Dayjs
 }
 
-const getAirColor = (value: number) => {
-  if (value === 0) return 'blue'
-  if (value < 50) {
-    return colors.yellow[100]
-  } else if (value < 100) {
-    return colors.yellow[200]
-  } else if (value < 150) {
-    return colors.yellow[400]
-  } else if (value < 200) {
-    return colors.yellow[500]
-  } else if (value < 300) {
-    return colors.yellow[600]
-  } else {
-    return colors.yellow[700]
-  }
-}
-
-const getTrafficColor = (value: number) => {
-  if (value === 0) return 'blue'
-  if (value < 5) {
-    return colors.cyan[200]
-  } else if (value < 10) {
-    return colors.cyan[300]
-  } else if (value < 15) {
-    return colors.cyan[400]
-  } else if (value < 20) {
-    return colors.cyan[500]
-  } else if (value < 25) {
-    return colors.cyan[400]
-  } else {
-    return colors.cyan[600]
-  }
-}
+const trafficColorMap = [
+  { range: [0, 5.99] as [number, number], color: colors.cyan[200] },
+  { range: [6, 10.99] as [number, number], color: colors.cyan[300] },
+  { range: [11, 15.99] as [number, number], color: colors.cyan[400] },
+  { range: [16, 20.99] as [number, number], color: colors.cyan[500] },
+  { range: [21, 25.99] as [number, number], color: colors.cyan[600] },
+  { range: [26, 9999] as [number, number], color: colors.cyan[700] }
+]
 
 export const CombineChart = ({ location, rawData, labels, startDate, endDate }: CombineChartProps) => {
   const [chartData, setChartData] = useState<ChartData<'bar' | 'line'>>(data)
@@ -169,31 +146,43 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
     const fetchData = async () => {
       try {
         setLoading(true)
-        const trafficDataset = {
+        const airQualityDataset = {
           type: 'line' as const,
-          label: t('traffic'),
-          borderColor: colors.blue[700],
+          label: t('air_quality'),
+          pointRadius: 4,
+          borderColor: colors.slate[400],
+          borderDash: [5, 5],
+          pointBackgroundColor: (context: { raw: number }) =>
+            context.raw ? getColorForValue(context.raw, airColorMap) : 'transparent',
           pointBorderColor: (context: { raw: number }) =>
-            context.raw ? getTrafficColor(context.raw) : colors.blue[300],
-          borderWidth: 4,
+            context.raw ? getColorForValue(context.raw, airColorMap) : 'transparent',
+          pointBorderWidth: 2,
+          pointHoverBorderColor: colors.slate[400],
+          borderWidth: 2,
+          pointHoverRadius: 8,
+          pointHitRadius: 4,
           borderJoinStyle: 'round',
-          data: rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0),
+          data: rawData.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0),
           yAxisID: 'y'
         } as ChartData<'line'>['datasets'][0]
 
-        const airQualityDataset = {
+        const trafficDataset = {
           type: 'bar' as const,
-          label: 'Air Quality',
-          backgroundColor: (context: { raw: number }) => getAirColor(context.raw ?? 0),
-          borderColor: 'white',
-          borderWidth: 2,
-          data: rawData.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0),
+          label: t('traffic'),
+          backgroundColor: (context: { raw: number }) =>
+            context.raw ? getColorForValue(context.raw, trafficColorMap) : 'black',
+          hoverBorderColor: colors.blue[600],
+          transitions: {
+            duration: 1000,
+            easing: 'easeInOutCubic'
+          },
+          data: rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0),
           yAxisID: 'y1'
         } as ChartData<'bar'>['datasets'][0]
 
         setChartData({
           labels,
-          datasets: [trafficDataset, airQualityDataset]
+          datasets: [airQualityDataset, trafficDataset]
         })
 
         setChartOptions({
@@ -209,19 +198,19 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
             y: {
               ...defaultChartOptions.scales?.y,
               suggestedMax:
-                Math.max(...rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0)) * 1.3,
+                Math.max(...rawData.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0)) * 1.3,
               title: {
                 display: true,
-                text: t('traffic_quality_index')
+                text: t('air_quality_index')
               }
             },
             y1: {
               ...defaultChartOptions.scales?.y1,
               suggestedMax:
-                Math.max(...rawData.map((item: TrafficAirData) => item.air_data?.air_quality_index ?? 0)) * 1.3,
+                Math.max(...rawData.map((item: TrafficAirData) => item.traffic_data?.traffic_quality_index ?? 0)) * 1.3,
               title: {
                 display: true,
-                text: t('air_quality_index')
+                text: t('traffic_quality_index')
               }
             }
           }
@@ -236,9 +225,15 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
     fetchData()
   }, [rawData, labels, location, startDate, endDate, t])
   return (
-    <div className="h-[20rem] w-full rounded-md border border-gray-200 md:col-span-8 md:h-[32rem]">
+    <div className="h-[20rem] w-full rounded-md border border-gray-200 md:col-span-8 md:h-[36.5rem]">
       <Spin spinning={loading} tip={t('loading...')} fullscreen />
-      <Chart ref={chartRef} type="bar" data={chartData as ChartData<'bar'>} options={chartOptions} />
+      <Chart
+        ref={chartRef}
+        type="bar"
+        data={chartData as ChartData<'bar'>}
+        options={chartOptions}
+        className="h-full w-full"
+      />
     </div>
   )
 }

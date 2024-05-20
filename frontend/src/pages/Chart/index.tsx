@@ -5,8 +5,7 @@ import { lazy, useCallback, useEffect, useState } from 'react'
 const CombineChart = lazy(() => import('./components/CombineChart'))
 const DateInput = lazy(() => import('./components/DateInput'))
 const LocationList = lazy(() => import('./components/LocationList'))
-// const StatisticPane = lazy(() => import('./components/StatisticPane'))
-import StatisticPane from './components/StatisticPane'
+const StatisticPane = lazy(() => import('./components/StatisticPane'))
 
 import { debounce } from 'lodash'
 

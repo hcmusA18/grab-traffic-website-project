@@ -34,7 +34,7 @@ export const StatisticPane = ({ className, location, traffic }: StatisticPanePro
         className="h-full w-full rounded-md object-cover"
       />
       <div className="flex flex-col space-y-4 rounded-md py-2">
-        <h3 className="text-center text-2xl font-bold capitalize">{t('appearance_rate')}</h3>
+        <h3 className="text-center font-bold capitalize md:text-2xl">{t('appearance_rate')}</h3>
         {traffic &&
           Object.entries(traffic).map(
             ([key, value]) =>

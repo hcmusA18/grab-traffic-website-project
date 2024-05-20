@@ -64,11 +64,11 @@ const DesktopSidebar: React.FC = () => {
   return (
     <div className="shadow-m sticky top-0 z-50 border-b border-gray-200 bg-white py-3">
       <div className="flex flex-row items-center justify-center px-1 py-0 sm:px-6">
-        <div className="float-left w-32">
+        <Link className="float-left w-32" to="/">
           <h3 className="inline-block text-2xl capitalize" style={{ fontFamily: 'Racing Sans One, sans-serif' }}>
             Traffiker
           </h3>
-        </div>
+        </Link>
         <div className="flex w-full flex-col items-center justify-between sm:flex-row">
           <div className="w-full">
             <CustomMenu mode="horizontal" />
