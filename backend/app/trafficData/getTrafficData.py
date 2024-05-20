@@ -121,7 +121,7 @@ if __name__ == '__main__':
                 if collect == 'Place_LatLong_API':
                     collection = collect
 
-    for document in database[collection].find():
+    for document in database[collection].find({}, {"_id": 0, "id": 1, "place": 1, "request": 1, "lat": 1, "long": 1}):
         paths.append([document['id'], document['place'],
                      document['request'], document['lat'], document['long']])
 
