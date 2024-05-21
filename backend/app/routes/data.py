@@ -126,7 +126,7 @@ class DataBase(Resource):
 class DataCurrent(DataBase):
     def get(self, id):
         location = place_latlong.find_one({"id": id})
-        traffic_data, air_data = location["traffic_data"][0], location["air_data"][0]
+        traffic_data, air_data = location["traffic_data"][-1], location["air_data"][-1]
         traffic_data["traffic_quality_index"] = calculate_traffic_index_from_dict(
             traffic_data
         )

@@ -36,6 +36,7 @@ database = get_database(mongo_client, "grab-engineering-project")
 place_latlong = database["Place_LatLong_API"]
 data_summary = database["data_summary"]
 future_summary = database["Predict_Future_Data"]
+image_database = database["images"]
 
 
 def find_one_document(collection, query, projection=None):
