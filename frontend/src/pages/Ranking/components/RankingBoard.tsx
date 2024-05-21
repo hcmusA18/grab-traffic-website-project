@@ -65,6 +65,8 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
       )
     )
   }, [ranking, rankDecrease, columns])
+  const hasNegative = sortedRanking.some((rank) => Number(rank[columns[1].key]) < 0)
+  const maxValue = Math.max(...sortedRanking.map((rank) => Math.abs(Number(rank[columns[1].key]))))
 
   const chartOptions: ChartOptions<'bar'> = {
     indexAxis: 'y' as const,
@@ -76,9 +78,10 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
     responsive: true,
     scales: {
       x: {
-        suggestedMax: Math.max(...sortedRanking.map((rank) => Number(rank[options.columns[1].key]))) * 1.1,
+        suggestedMax: maxValue * 1.1,
+        min: hasNegative ? -maxValue * 1.1 : 0,
         ticks: {
-          stepSize: 5
+          stepSize: Math.round(maxValue / 5)
         }
       }
     },
@@ -152,7 +155,7 @@ export const RankingBoard: React.FC<RankingBoardProps> = ({ ranking, options }: 
   }
 
   return (
-    <div className="h-[20rem] md:h-[32rem]">
+    <div className="h-[20rem] md:h-[42rem]">
       <Bar data={generateChartData()} options={chartOptions} plugins={[ChartDataLabels]} />
     </div>
   )

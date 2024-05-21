@@ -49,7 +49,7 @@ const CustomMenu: React.FC<{ mode: 'horizontal' | 'inline' }> = ({ mode }) => {
         icon: item.icon,
         label: item.label
       }))}
-      style={{ lineHeight: '64px' }} // Ensures vertical alignment for horizontal menu
+      style={{ lineHeight: '52px', borderBottom: 0 }} // Ensures vertical alignment for horizontal menu
     />
   )
 }

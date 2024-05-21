@@ -70,19 +70,17 @@ export const RankingPage = () => {
   return (
     <div className="container box-border min-h-screen min-w-full px-3 py-4 md:px-4">
       {!isMobile ? (
-        <div>
-          <Tabs defaultActiveKey="air" centered size="large" renderTabBar={CustomTabBar}>
-            <Tabs.TabPane tab={t('air_quality')} key="air">
-              <AirRanking />
-            </Tabs.TabPane>
-            <Tabs.TabPane tab={t('traffic')} key="traffic">
-              <TrafficRanking />
-            </Tabs.TabPane>
-            <Tabs.TabPane tab={t('change')} key="change">
-              <ChangeRanking />
-            </Tabs.TabPane>
-          </Tabs>
-        </div>
+        <Tabs defaultActiveKey="air" centered size="large" renderTabBar={CustomTabBar} className="flex">
+          <Tabs.TabPane tab={t('air_quality')} key="air">
+            <AirRanking />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab={t('traffic')} key="traffic">
+            <TrafficRanking />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab={t('change')} key="change">
+            <ChangeRanking />
+          </Tabs.TabPane>
+        </Tabs>
       ) : (
         <div className="flex flex-col space-y-4">
           <div className="text-right" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
