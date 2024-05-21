@@ -1,4 +1,5 @@
 import io
+import threading
 import requests
 import time
 from PIL import Image
@@ -16,26 +17,44 @@ def getTrafficData(path, db, collection):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"}
 
-    # Save image
-    k = 'backend/app/trafficData/data/images/' + f'{path[0]}.jpg'
+    # Save image to absolute path
+    k = "backend/app/trafficData/data/images/" + f"{path[0]}.jpg"
+
+    # Create folder
+    try:
+        os.mkdir('backend/app/trafficData/data/images')
+    except:
+        pass
 
     saigon = timezone('Asia/Saigon')
     timepoint = datetime.now(saigon)
 
     try:
+        response = requests.get(url, headers=headers)
+        # wait 10 seconds then retry
+        while response.status_code != 200:
+            time.sleep(10)
+            response = requests.get(url, headers=headers)
+        im = Image.open(io.BytesIO(response.content))
+        im.show()
+    except Exception as e:
+        print("Error while fetching image ", path[0], e)
+        return
+
+    try:
         # print(requests.get(url, headers=headers).content)
-        if (requests.get(url, headers=headers).headers['Content-Type']):
-            with open(k, 'wb') as f:
-                f.write(requests.get(url, headers=headers).content)
+        if (response.status_code == 200):
             # Resizing image
-            im = Image.open(k)
             imB = im.resize((1024, 576))
-            imB.save(k)
+            try: 
+                imB.save(k, format='JPEG')
+            except Exception as e:
+                print("Error while saving image ", path[0], e)
             # save image into mongodb
             image_bytes = io.BytesIO()
             imB.save(image_bytes, format='JPEG')
             db["images"].update_one({"id": path[0]}, {"$set": {"image": image_bytes.getvalue()}}, upsert=True)
-            
+
             s = run(source=k, nosave=True)
             x = s.split()
             count, car, bike, truck, bus, person, motorbike = 0, 0, 0, 0, 0, 0, 0
@@ -64,7 +83,7 @@ def getTrafficData(path, db, collection):
             }
             db[collection].find_one_and_update(
                 {"id": path[0]}, {"$push": {'traffic_data': data}})
-            
+
             today = str(timepoint.date())
             hour = timepoint.hour
             try:
@@ -81,7 +100,7 @@ def getTrafficData(path, db, collection):
                 data_count = db["data_summary"].find_one({"id": path[0]})[today]["traffic_count"][hour]
                 data_count_array = db["data_summary"].find_one({"id": path[0]})[today]["traffic_count"]
                 data_summary = db["data_summary"].find_one({"id": path[0]})[today]["traffic_summary"]
-            
+
             data_summary[hour] = data_summary[hour]*data_count + (
                 person*0.25 + car + (motorbike + bike) * 0.5 + (truck + bus) * 0.5
             )
@@ -125,5 +144,13 @@ if __name__ == '__main__':
         paths.append([document['id'], document['place'],
                      document['request'], document['lat'], document['long']])
 
+    # for path in paths:
+    #     getTrafficData(path, database, collection)
+    threads = []
+
     for path in paths:
-        getTrafficData(path, database, collection)
+        t = threading.Thread(target=getTrafficData, args=(path, database, collection))
+        t.start()
+        threads.append(t)
+    for t in threads:
+        t.join()
