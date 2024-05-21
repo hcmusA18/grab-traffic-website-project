@@ -2,8 +2,8 @@ name: data-traffic
 
 on:
   schedule:
-    - cron: '*/1 * * * *'
-    - cron: '*/2 * * * *'
+    - cron: '*/5 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 jobs:
