@@ -156,8 +156,8 @@ export const ChartPage = () => {
         />
       </div>
       {/* Chart and statistics section */}
-      <div className="col-span-full grid grid-cols-1 gap-4 md:grid-cols-12">
-        <div className="grid grid-cols-1 gap-4 md:col-span-12 md:grid-cols-12">
+      <div className="col-span-full grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-4 lg:col-span-12 lg:grid-cols-12">
           <CombineChart
             location={locationName}
             rawData={data}
@@ -167,7 +167,7 @@ export const ChartPage = () => {
             key={i18n.language}
           />
           <StatisticPane
-            className="border-1 col-span-1 rounded-md border border-gray-200 p-8 md:col-span-4"
+            className="border-1 col-span-1 gap-4 rounded-md border border-gray-200 p-8 sm:grid sm:grid-cols-4 lg:col-span-4 lg:h-[36.5rem]"
             location={location}
             traffic={trafficData}
           />

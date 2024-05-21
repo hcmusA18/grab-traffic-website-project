@@ -21,10 +21,10 @@ export const PaneItem: React.FC<ItemProps> = ({
     onMouseLeave={onMouseLeave}>
     <div className="flex flex-row items-center gap-2">
       {leadingIcon}
-      <p className="text-base font-semibold">{title}</p>
+      <p className="text-sm lg:font-semibold xl:text-base">{title}</p>
     </div>
-    <p className="text-base">
-      <span className="font-bold">{value}</span> <span>{unit}</span>
+    <p className="text-sm xl:text-base">
+      <span className="text-sm font-semibold">{value}</span> <span>{unit}</span>
     </p>
   </div>
 )

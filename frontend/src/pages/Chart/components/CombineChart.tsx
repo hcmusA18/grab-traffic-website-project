@@ -225,7 +225,7 @@ export const CombineChart = ({ location, rawData, labels, startDate, endDate }: 
     fetchData()
   }, [rawData, labels, location, startDate, endDate, t])
   return (
-    <div className="h-[20rem] w-full rounded-md border border-gray-200 md:col-span-8 md:h-[36.5rem]">
+    <div className="h-[20rem] w-full rounded-md border border-gray-200 md:h-[36.5rem] lg:col-span-8">
       <Spin spinning={loading} tip={t('loading...')} fullscreen />
       <Chart
         ref={chartRef}

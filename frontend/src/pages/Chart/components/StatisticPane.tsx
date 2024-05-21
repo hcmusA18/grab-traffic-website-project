@@ -30,10 +30,10 @@ export const StatisticPane = ({ className, location, traffic }: StatisticPanePro
       <CustomImage
         src={`${API_URL}/image/locationID=${location}`}
         alt="location"
-        containerClassName="h-48 w-full rounded-md flex items-center justify-center"
-        className="h-full w-full rounded-md object-cover"
+        containerClassName="lg:h-48 w-full rounded-md flex items-center justify-center sm:col-span-2 lg:col-span-4"
+        className="h-full w-full rounded-md object-contain"
       />
-      <div className="flex flex-col space-y-4 rounded-md py-2">
+      <div className="flex flex-col space-y-4 rounded-md py-2 sm:col-span-2 lg:col-span-4">
         <h3 className="text-center font-bold capitalize md:text-2xl">{t('appearance_rate')}</h3>
         {traffic &&
           Object.entries(traffic).map(
