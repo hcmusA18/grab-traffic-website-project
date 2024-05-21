@@ -36,7 +36,6 @@ def getTrafficData(path, db, collection):
             time.sleep(10)
             response = requests.get(url, headers=headers)
         im = Image.open(io.BytesIO(response.content))
-        im.show()
     except Exception as e:
         print("Error while fetching image ", path[0], e)
         return
