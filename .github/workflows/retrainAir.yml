@@ -2,7 +2,7 @@ name: retrain-air
 
 on:
   schedule:
-    - cron: '30 17 * * *'
+    - cron: '30 23 * * *'
   workflow_dispatch:
 
 permissions:
