@@ -2,7 +2,7 @@ name: retrain-traffic
 
 on:
   schedule:
-    - cron: '30 17 * * *'
+    - cron: '30 23 * * *'
   workflow_dispatch:
 
 jobs:
